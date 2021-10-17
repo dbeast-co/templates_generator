@@ -31,7 +31,9 @@ public class RESTIndexAnalyzerSettings extends ARest {
                 return objectToString(dataWarehouse.getNewProject());
             });
             get("/get/:id", (request, response) -> {
-                logger.info("Got request for project with id: " + request.params(":id"));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Got request for project with id: " + request.params(":id"));
+                }
                 ProjectPOJO result = mappingGeneratorController.getProjectById(request.params(":id"));
                 return objectToString(result);
             });

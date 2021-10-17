@@ -2,7 +2,7 @@ package com.dbeast.templates_generator.constants;
 
 public enum EAppSettings {
     PROJECT_SETTINGS_FILE("project_settings.json"),
-    CONFIGURATION_FILE("index_analyzer.yml"),
+    CONFIGURATION_FILE("templates_generator.yml"),
     DATE_FORMATS_FILE("date_formats.yml"),
     ANALYZER_CHANGELOG_FILE("analyzer_changelog.log"),
     ANALYZER_ALL_LOGS_FILE("all.zip"),

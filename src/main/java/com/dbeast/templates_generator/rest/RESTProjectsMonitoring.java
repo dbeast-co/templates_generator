@@ -14,8 +14,8 @@ public class RESTProjectsMonitoring extends ARest {
     public void rest() {
         path("/projects_monitoring", () -> {
             get("/projects_status", (request, response) -> {
-                    logger.info("Got request for projects monitoring");
                 if (logger.isDebugEnabled()) {
+                    logger.debug("Got request for projects monitoring");
                 }
                 return objectToString(projectsMonitoringController.getProjectsStatusForUI());
             });

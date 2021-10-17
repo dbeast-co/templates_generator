@@ -17,7 +17,7 @@
     </properties>
 
     <build>
-        <finalName>index_analyzer</finalName>
+        <finalName>templates_generator</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -213,7 +213,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.7.1</version>
-<!--            <scope>test</scope>-->
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.eirslett</groupId>

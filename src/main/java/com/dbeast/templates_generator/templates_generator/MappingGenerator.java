@@ -80,6 +80,7 @@ public class MappingGenerator {
         }
     }
 
+
     public boolean generate() throws ClusterConnectionException, IOException, IndexNotFoundOrEmptyException, TemplateNotFoundException {
         Map<String, Object> templateGeneratedMapping = new HashMap<>();
 
@@ -91,25 +92,13 @@ public class MappingGenerator {
         String projectId = project.getProjectId();
         RestHighLevelClient client = elasticsearchClient.getHighLevelClient(project.getInputSettings().getSourceCluster());
 
-        boolean isTemplateExists = true;
-
         elasticsearchController.getClusterStatus(client);
 
         if (project.getOutputSettings().getTemplateProperties().isAddFieldsFromExistingTemplate()) {
-            isTemplateExists = elasticsearchController.isTemplateExists(client,
-                    project.getOutputSettings().getTemplateProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName());
-            if (!isTemplateExists) {
-                updateFailStatus();
-                throw new TemplateNotFoundException(project.getOutputSettings().getTemplateProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName());
-            }
+            throwExceptionIfTemplateNotExists(client, project.getOutputSettings().getTemplateProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName());
         }
         if (project.getOutputSettings().getIndexProperties().isAddFieldsFromExistingTemplate()) {
-            isTemplateExists = isTemplateExists && elasticsearchController.isTemplateExists(client,
-                    project.getOutputSettings().getIndexProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName());
-            if (!isTemplateExists) {
-                updateFailStatus();
-                throw new TemplateNotFoundException(project.getOutputSettings().getIndexProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName());
-            }
+            throwExceptionIfTemplateNotExists(client, project.getOutputSettings().getIndexProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName());
         }
 
         long docsInSource = elasticsearchController.getDocsCount(client,
@@ -176,6 +165,14 @@ public class MappingGenerator {
             } else if (entry.getKey().equals("type") && entry.getValue().toString().equals("keyword")) {
                 templateGeneratedMapping.put("normalizer", EAppSettings.DEFAULT_NORMALIZER_NAME.getConfigurationParameter());
             }
+        }
+    }
+
+    private void throwExceptionIfTemplateNotExists(RestHighLevelClient client, String templateName) throws TemplateNotFoundException {
+        boolean isTemplateExists = elasticsearchController.isTemplateExists(client, templateName);
+        if (!isTemplateExists) {
+            updateFailStatus();
+            throw new TemplateNotFoundException(templateName);
         }
     }
 
@@ -343,14 +340,10 @@ public class MappingGenerator {
                     EAppSettings.PROJECT_SETTINGS_FILE.getConfigurationParameter(), project);
 
             searchResults = elasticsearchController.searchWithScrollWithScrollId(searchResults.getScrollId(), client);
-            if (logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled() && (docsCount % 1000 == 0)) {
                 logger.debug("processed " + docsCount + " documents");
             }
-            if (docsCount % 1000 == 0) {
-                logger.info("processed " + docsCount + " documents");
-            }
         }
-        //TODO add empty/incorrect index
         return elasticsearchController.closeScrollRequest(searchResults.getScrollId(), client);
     }
 
@@ -372,9 +365,6 @@ public class MappingGenerator {
     private void addToSchema(final String key,
                              final JsonNode jsonNode,
                              final Map<String, Object> schema) {
-        if (TemplatesGenerator.isDebugMode && key.equals(TemplatesGenerator.fieldForTest) && schema.get(key) != null) {
-            System.out.println("stop! Added to schema, old: " + ((FieldTypePropertiesPOJO) schema.get(key)).enumType() + " value:" + jsonNode.asText());
-        }
         if (jsonNode.isObject()) {
             ObjectNode objectNode = (ObjectNode) jsonNode;
             HashMap<String, Object> childNode;
