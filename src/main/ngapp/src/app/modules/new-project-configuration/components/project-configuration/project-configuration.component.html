@@ -1,0 +1,545 @@
+<div class="container config">
+
+  <form [formGroup]="newProjectForm" *ngIf="project || newProjectForm ;else showProgressBar">
+    <div class="project_header">
+      <div class="project_status" formGroupName="status">
+        <mat-form-field class="status">
+          <input matInput type="text" value="{{project_status?.value}}" [ngClass]="getProjectStatus()" readonly
+                 style="pointer-events: none">
+        </mat-form-field>
+        <div class="status__progress">
+          <mat-progress-bar mode="determinate" class="mat-progress"
+                            [value]="execution_progress?.value"></mat-progress-bar>
+          <span style="color: white">{{execution_progress?.value}}%</span>
+        </div>
+        <div class="docs">
+          <span>Docs in index: {{docs_in_index?.value}}</span>
+          <span>Docs for analyze: {{docs_for_analyze?.value}}</span>
+          <span>Analyzed: {{analyzed_docs?.value}}</span>
+        </div>
+
+      </div>
+      <div class="header_actions">
+        <div class="project_name">
+          <mat-form-field class="required">
+            <input type="text" (input)="onInputProjectName(newProjectForm.get('project_name').value)" matInput
+                   formControlName="project_name" placeholder="Project name">
+          </mat-form-field>
+          <mat-error class="project_name_error"
+                     *ngIf="showValidationNameError">
+            This project name is already exists
+          </mat-error>
+          <mat-error class="project_name_error"
+                     *ngIf="newProjectForm.controls.project_name.errors && showValidationNameErrorRequired">
+            This field is required
+          </mat-error>
+        </div>
+        <div class="actions">
+          <!--          <button mat-raised-button (click)="onAnalyze()">Analyze/Stop</button>-->
+
+          <button #analyzeBtn mat-raised-button
+                  [disabled]="isDisableButton"
+                  (click)="onAnalyze(startStopBtn)" type="button">{{startStopBtn}}
+            <img src="./assets/icons/{{playIcon}}" alt="play/stop" *ngIf="!analyzeBtn.disabled ;else analyzeBtnEnabled">
+            <ng-template #analyzeBtnEnabled>
+              <img src="assets/icons/play_arrow-black-18dp.svg" alt="">
+            </ng-template>
+          </button>
+
+          <button #saveBtn mat-raised-button type="button" (click)="onSaveProject()" [disabled]="isDisableButton">
+            Save
+            <img src="assets/icons/save-white-18dp.svg" alt=""
+                 *ngIf="!saveBtn.disabled ;else btnEnabled">
+            <ng-template #btnEnabled>
+              <img src="assets/icons/save-white-18dp_color_white.svg" alt="" style="margin-left: 5px">
+            </ng-template>
+          </button>
+
+          <button mat-raised-button (click)="onDeleteProject(project_id)">Delete
+            <img src="assets/icons/delete_forever-white-18dp.svg" alt="">
+
+            <ng-template #deleteBtnEnabled>
+              <img src="assets/icons/delete_forever-black-18dp.svg" alt="">
+            </ng-template>
+          </button>
+          <!--          <button mat-raised-button>Delete</button>-->
+        </div>
+      </div>
+
+    </div>
+    <!--    Grid -->
+
+    <div class="grid">
+      <div class="project_form">
+        <div class="sources_container">
+          <div class="connection_settings_wrapper">
+            <div formGroupName="input">
+              <div class="source_cluster" formGroupName="source_cluster">
+                <h2 class="source_title">Source</h2>
+                <div class="host_wrapper">
+                  <mat-form-field>
+                    <input matInput type="text" formControlName="es_host" placeholder="Host" ylDisableEnter>
+                  </mat-form-field>
+                  <mat-error class="es_host_source_error" *ngIf="es_host?.errors?.pattern">
+                    Host format is invalid
+                  </mat-error>
+                </div>
+
+                <mat-checkbox #auth formControlName="authentication_enabled" (change)="onUseSourceAuth($event)"
+                              [checked]="source_use_authentication_enabled.value">Use
+                  authentication
+                </mat-checkbox>
+                <div class="credentials_wrapper" style="position: relative">
+                  <mat-form-field class="username" [class.required]="source_use_authentication_enabled.value">
+                    <input matInput type="text" ylDisableEnter formControlName="username" placeholder="Username"
+                           (input)="onSourceInput(source_username.value,source_password.value)">
+                  </mat-form-field>
+
+                  <mat-error class="username_error"
+                             *ngIf="source_username.errors?.required && source_username.touched ">
+                    This field
+                    is
+                    required
+                  </mat-error>
+                  <mat-form-field class="password" [class.required]="source_use_authentication_enabled.value">
+                    <input matInput type="password" ylDisableEnter formControlName="password" placeholder="Password"
+                           (input)="onSourceInput(source_username.value,source_password.value)">
+                  </mat-form-field>
+                  <mat-error class="password_error"
+                             *ngIf="source_password.errors?.required && source_password.touched ">
+                    This field
+                    is
+                    required
+                  </mat-error>
+                </div>
+                <div class="ssl">
+                  <div class="left">
+                    <mat-checkbox #ssl formControlName="ssl_enabled" (change)="onSourceSSL($event)">SSL</mat-checkbox>
+                  </div>
+                  <div class="right_source" [ngClass]="{'show': showSourceSSLBtn}">
+                    <span
+                      matTooltip="You don't have to provide the certificate. In case  of empty certificate we will disable certificate validation"
+                      matTooltipClass="custom-tooltip" class="tooltip_info">?</span>
+                    <span>SSL Certificate</span>
+                    <div class="upload_ssl" [ngClass]="{'disabled': !showSourceSSLBtn}">
+                      <label for="ssl-source">Browse</label>
+                      <input type="file" name="ssl" #fileSourceRef id="ssl-source"
+                             (change)="onImportSSL($event,'source')"/>
+                      <mat-spinner [diameter]="20" ylCustomSpinner color="#fff"
+                                   *ngIf="isUploadSSLFileForSource"></mat-spinner>
+                      <img src="assets/icons/done-white-18dp.svg" alt="" *ngIf="isSuccessForSource"
+                           matTooltip="Uploaded!">
+                      <img src="assets/icons/close-white-18dp.svg" alt="" *ngIf="isErrorForSource" matTooltip="Failed!">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="actions">
+                  <div class="left">
+                    <button mat-raised-button type="button" (click)="onTestSource(newProjectForm,'source')"
+                            [disabled]="es_host.value === ''  || es_host?.errors?.pattern || isDisableSourceTestButton">
+                      Test
+                    </button>
+                    <!--              <button mat-raised-button type="button" (click)="onGetIndices()"-->
+                    <!--                      [disabled]="!isTestSourceClicked && source_cluster_status !== 'YELLOW' || !isTestSourceClicked && source_cluster_status !== 'GREEN'">-->
+                    <!--                Get indices-->
+                    <!--              </button>-->
+                  </div>
+                  <div class="right">
+                    <mat-form-field class="status"
+                                    [ngClass]="{'warn': source_cluster_status.value === 'YELLOW' ,'danger': source_cluster_status.value === 'RED' || source_cluster_status.value === 'ERROR' ,'success': source_cluster_status.value === 'GREEN' ,'new_stopped': source_cluster_status.value === '' }"
+                                    #sourceClusterStatus>
+                      <input matInput type="text" formControlName="status" readonly>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div formGroupName="output">
+        <div class="template_properties_container" formGroupName="template_properties"
+             #template_properties_containerRef
+             [ngClass]="{'showSettings': addAllFieldsToTemplate.checked || is_add_fields_from_existing_templateForTemplate?.value === true ,'center': addAllFieldsToTemplate.checked ===false && this.newProjectForm.get('output').get('index_properties').get('is_add_fields_from_existing_template').value ===
+      true || addAllFieldsForIndexProperties.checked} ">
+          <div class="col">
+            <h2 class="title">Template properties</h2>
+            <div>
+              <div class="template_name row">
+                <div class="properties">
+                  <mat-form-field floatLabel="auto" class="required">
+                    <input type="text" matInput placeholder="Template name" formControlName="template_name"
+                    >
+                  </mat-form-field>
+                  <mat-error class="template_name_error"
+                             *ngIf="template_properties.controls.template_name.touched && template_properties.controls.template_name?.errors ">
+                    This field is required
+                  </mat-error>
+                  <mat-form-field class="required">
+                    <input type="text" matInput placeholder="Index patterns" formControlName="index_patterns">
+                  </mat-form-field>
+                  <mat-error class="index_patterns_error"
+                             *ngIf="template_properties.controls.index_patterns.touched && template_properties.controls.index_patterns?.errors ">
+                    This field is required
+                  </mat-error>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="properties">
+                  <mat-form-field>
+                    <input type="text" matInput placeholder="Order" formControlName="order">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input type="text" matInput placeholder="Alias" formControlName="alias">
+                  </mat-form-field>
+                </div>
+              </div>
+
+            </div>
+
+            <h2>Settings</h2>
+            <div formGroupName="index_settings">
+              <div class="row">
+                <div class="properties">
+                  <mat-form-field>
+                    <input type="number" matInput placeholder="Number of shards" formControlName="number_of_shards">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input type="number" matInput placeholder="Number of replicas" formControlName="number_of_replicas">
+
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="properties">
+                  <mat-form-field>
+
+                    <input type="text" matInput placeholder="Compression" formControlName="codec">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input type="text" matInput placeholder="Refresh interval" formControlName="refresh_interval">
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+            <div class="row checkboxes_container">
+              <mat-checkbox #addAllFieldsToTemplate formControlName="is_add_fields_from_existing_template"
+                            [ylDisableControl]=" this.newProjectForm.get('actions').get('is_generate_template').value ===
+      false">Add fields
+                from
+                existing template
+              </mat-checkbox>
+              <mat-checkbox #addNormalize formControlName="is_add_normalizer_to_keyword_fields" [ylDisableControl]=" this.newProjectForm.get('actions').get('is_generate_template').value ===
+      false">Add normalize to all keyword fields
+
+              </mat-checkbox>
+            </div>
+          </div>
+
+          <div class="settings_by_checkboxes" *ngIf="addAllFieldsToTemplate.checked"
+               [ngClass]="{'show': addAllFieldsToTemplate.checked || is_add_fields_from_existing_templateForTemplate?.value === true}"
+          >
+            <div class="existing_template_actions" formGroupName="existing_template_actions">
+              <mat-form-field>
+                <input matInput type="text" placeholder="Existing template name"
+                       formControlName="add_fields_from_existing_template_name"
+                >
+              </mat-form-field>
+
+              <mat-checkbox
+                formControlName="is_add_all_fields" (change)="onCheckAddAllFieldsForTemplate($event)">
+                Add all fields
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_add_fields_from_at_least_one_time_used_root_level"
+                (change)="onCheckAddOnlyUsedTopLevelFieldsForTemplate($event)">
+                Add only used top level fields
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_replace_existing_field_types">
+                Replace existing filed types
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_add_settings">
+                Add settings
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_add_dynamic_mapping">
+                Add dynamic mappings
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_generate_dedicated_none_existing_fields_template">
+                Generate dedicated template
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_ignore_type_conflicts">
+                Ignore type conflicts
+              </mat-checkbox>
+            </div>
+
+            <div class="row" formGroupName="existing_template_actions">
+
+            </div>
+
+            <div class="row" formGroupName="existing_template_actions">
+
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+      <div class="buttons_actions_container">
+        <button mat-raised-button (click)="onDownloadIndex()"
+                [disabled]="is_done?.value === false || generateIndexCheckbox?.checked === false || is_failed?.value === true">
+          <img src="assets/icons/file_download_white_18dp.svg" alt=""
+               *ngIf="is_done?.value === false || generateIndexCheckbox?.checked === false || is_failed?.value === true;else showEnableIconForIndex">
+          <!--          <img src="assets/icons/file_download_black_18dp.svg" alt=""-->
+          <!--               *ngIf="is_done?.value === false ;else showDisableIcon">-->
+          <ng-template #showEnableIconForIndex>
+            <img src="assets/icons/file_download_black_18dp.svg" alt=""
+            >
+          </ng-template>
+
+
+          <span> Index</span>
+        </button>
+        <button mat-raised-button (click)="onDownloadLogs()"
+                [disabled]="is_done?.value === false">
+          <img src="assets/icons/file_download_white_18dp.svg" alt=""
+               *ngIf="is_done?.value === false;else showDisableIconForLogs">
+
+
+          <ng-template #showDisableIconForLogs>
+            <img src="assets/icons/file_download_black_18dp.svg" alt=""
+            >
+          </ng-template>
+
+          <span>Change log</span>
+        </button>
+        <button mat-raised-button (click)="onDownloadTemplate()"
+                [disabled]="is_done?.value === false || generateTemplateCheckbox?.checked === false || is_failed?.value === true">
+          <img src="assets/icons/file_download_white_18dp.svg" alt=""
+               *ngIf="is_done?.value === false || generateTemplateCheckbox?.checked === false || is_failed?.value === true  ;else showDisableForTemplate">
+          <ng-template #showDisableForTemplate>
+            <img src="assets/icons/file_download_black_18dp.svg" alt=""
+            >
+          </ng-template>
+
+
+          <span>Template</span>
+        </button>
+        <button mat-raised-button (click)="onDownloadAll()"
+                [disabled]="is_done?.value === false">
+          <img src="assets/icons/file_download_white_18dp.svg" alt=""
+               *ngIf="is_done?.value === false;else showDisableIconForAll">
+
+          <ng-template #showDisableIconForAll>
+            <img src="assets/icons/file_download_black_18dp.svg" alt=""
+            >
+          </ng-template>
+          <span>All</span>
+        </button>
+      </div>
+
+      <div class="actions_container" formGroupName="actions">
+
+        <div class="col"><h2>Actions</h2>
+          <div class="actions">
+            <mat-checkbox #generateTemplateCheckbox formControlName="is_generate_template"
+                          (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate
+              template
+            </mat-checkbox>
+            <mat-checkbox #generateIndexCheckbox formControlName="is_generate_index"
+                          (change)="onCheckGenerateTemplateOrIndex($event,1)">
+              Generate
+              index
+            </mat-checkbox>
+          </div>
+        </div>
+
+      </div>
+      <div class="input_settings_container" formGroupName="input">
+        <div class="col">
+          <h2>Input settings</h2>
+          <div formGroupName="input_settings">
+            <div class="index_for_analyze">
+              <mat-form-field class="required">
+                <input type="text" matInput placeholder="Index for analyze" formControlName="index_for_analyze">
+              </mat-form-field>
+              <mat-error
+                *ngIf="(index_for_analyze?.touched || index_for_analyze?.dirty) && index_for_analyze?.errors?.required ">
+                This field is required
+              </mat-error>
+
+            </div>
+
+            <mat-form-field>
+              <input type="number" matInput placeholder="Max docs for analyze" formControlName="max_docs_for_analyze">
+            </mat-form-field>
+            <mat-form-field>
+              <input type="number" matInput placeholder="Scroll size" formControlName="scroll_size">
+            </mat-form-field>
+          </div>
+        </div>
+
+      </div>
+
+      <div formGroupName="output">
+        <div class="index_properties_container" formGroupName="index_properties"
+             [ngClass]="{'showSettings': addAllFieldsForIndexProperties.checked,'center': addAllFieldsForIndexProperties.checked ===false && this.newProjectForm.get('output').get('template_properties').get('is_add_fields_from_existing_template').value ===
+      true && addAllFieldsToTemplate.checked}">
+          <div class="col">
+            <h2 class="title">Index properties</h2>
+            <div class="row">
+              <div class="index_name">
+                <mat-form-field class="required">
+                  <input type="text" matInput placeholder="Index name" formControlName="index_name">
+                </mat-form-field>
+                <mat-error class="index_name_error"
+                           *ngIf="index_properties.controls.index_name?.errors && index_properties.controls.index_name.touched">
+                  This field is required
+                </mat-error>
+                <mat-form-field>
+                  <input type="text" matInput placeholder="Alias" formControlName="alias">
+                </mat-form-field>
+              </div>
+            </div>
+            <h2 class="subtitle">Settings</h2>
+            <div formGroupName="index_settings">
+              <div class="row">
+                <div class="properties">
+                  <mat-form-field>
+                    <input type="text" matInput placeholder="Number of shards" formControlName="number_of_shards">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input type="number" matInput placeholder="Number of replicas"
+                           formControlName="number_of_replicas">
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="properties">
+                  <mat-form-field>
+                    <input type="text" matInput placeholder="Compression" formControlName="codec">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input type="text" matInput placeholder="Refresh interval" formControlName="refresh_interval">
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+            <div class="row ">
+              <mat-checkbox #addAllFieldsForIndexProperties
+                            formControlName="is_add_fields_from_existing_template" [ylDisableControl]="this.newProjectForm.get('actions').get('is_generate_index').value ===
+      false">Add
+                fields from
+                existing index
+              </mat-checkbox>
+
+              <mat-checkbox #addNormalize
+                            formControlName="is_add_normalizer_to_keyword_fields" [ylDisableControl]="this.newProjectForm.get('actions').get('is_generate_index').value ===
+      false">Add normalize to all keyword fields
+
+              </mat-checkbox>
+            </div>
+
+
+          </div>
+          <div class="settings_by_checkboxes" *ngIf="addAllFieldsForIndexProperties.checked"
+               [ngClass]="{'show': addAllFieldsForIndexProperties.checked || is_add_fields_from_existing_templateForIndex.value === true}"
+          >
+            <div class="existing_template_actions" formGroupName="existing_template_actions">
+              <mat-form-field>
+                <input matInput type="text" placeholder="Add fields from existing template"
+                       formControlName="add_fields_from_existing_template_name"
+                >
+              </mat-form-field>
+
+              <mat-checkbox
+                (change)="onCheckAddAllFieldsForIndex($event)"
+                formControlName="is_add_all_fields">
+                Add all fields
+              </mat-checkbox>
+
+              <mat-checkbox
+                (change)="onCheckAddOnlyUsedTopLevelFieldsForIndex($event)"
+                formControlName="is_add_fields_from_at_least_one_time_used_root_level">
+                Add only used top level fields
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_replace_existing_field_types">
+                Replace existing filed types
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_add_settings">
+                Add settings
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_add_dynamic_mapping">
+                Add dynamic mappings
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_generate_dedicated_none_existing_fields_template">
+                Generate dedicated template
+              </mat-checkbox>
+
+              <mat-checkbox
+                formControlName="is_ignore_type_conflicts">
+                Ignore type conflicts
+              </mat-checkbox>
+            </div>
+
+            <div class="row" formGroupName="existing_template_actions">
+
+            </div>
+
+            <div class="row" formGroupName="existing_template_actions">
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="mapping_changes_container">
+
+        <div class="col">
+          <h2>Mapping changes logs</h2>
+          <div class="logs">
+            <textarea matTextareaAutosize cols="30" rows="10" formControlName="mapping_changes_log" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </form>
+  <div [ngClass]="{'show-overlay': isActiveOverlay || showSpinner}">
+    <div class="spinner_wrapper" *ngIf="showSpinner">
+      <div class="spinner">
+        <mat-spinner [diameter]="30" ylCustomSpinner color="#087F8C"></mat-spinner>
+      </div>
+    </div>
+  </div>
+  <ng-template #showProgressBar>
+    <mat-progress-bar mode='indeterminate' class="mat-loader"></mat-progress-bar>
+  </ng-template>
+
+</div>
+<yl-error [errorMessage]="errorMessage" *ngIf="isShowErrorDialog" (isCloseEmit)="onCloseErrorDialog($event)"></yl-error>
+
+<yl-yes-no *ngIf="isShowYesNoDialog" (isYesEmit)="onYes($event)" (isCloseDialog)="onNo($event)"
+           (isNoEmit)="onNo($event)"></yl-yes-no>

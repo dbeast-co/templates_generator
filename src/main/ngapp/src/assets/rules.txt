@@ -1,0 +1,11 @@
+For refresh: same API as get project by id
+Stopping refresh spinner based on is_done variable
+Project name validation api: /validate/:name
+Feel form of mapping change log (if i open existing project now, the windows is empty)
+Required fields:
+  Project name
+  In input index for analyze
+
+  If Generate template checked: template name, index pattern
+  If Generate index checked: index name
+  At least one of "Generate" supposed to be checked
