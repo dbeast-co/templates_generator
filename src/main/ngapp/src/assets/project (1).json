@@ -1,0 +1,62 @@
+{
+  "project_name": null,
+  "project_id": "b0c0d66e44b44722b23c5ce555565779",
+  "input": {
+    "input_settings": {
+      "index_for_analyze": null,
+      "max_docs_for_analyze": 100000,
+      "scroll_size": 1000
+    },
+    "source_cluster": {
+      "es_host": "http://localhost:9200",
+      "authentication_enabled": false,
+      "username": null,
+      "password": null,
+      "ssl_enabled": false,
+      "ssl_file": null,
+      "status": "UNTESTED"
+    }
+  },
+  "output": {
+    "template_properties": {
+      "template_name": null,
+      "index_patterns": null,
+      "order": 0,
+      "index_settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "refresh_interval": "30s",
+        "codec": "best_compression"
+      }
+    },
+    "index_properties": {
+      "index_name": null,
+      "index_settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 1,
+        "refresh_interval": "30s",
+        "codec": "best_compression"
+      }
+    }
+  },
+  "status": {
+    "execution_progress": 0,
+    "project_status": "NEW",
+    "is_done": false,
+    "is_in_active_process": false,
+    "docs_in_index": 0,
+    "docs_for_analyze": 0,
+    "analyzed_docs": 0
+  },
+  "actions": {
+    "is_generate_template": true,
+    "is_generate_index": true
+  },
+  "mapping_changes_log": []
+},
+{
+"status": {
+"cluster_status": "RED",
+"error": "Error Message"
+}
+}
