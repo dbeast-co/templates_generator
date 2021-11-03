@@ -44,7 +44,7 @@ public abstract class AbstractAnalyzer implements IAnalyzer {
         this.mappingChangeLog = mappingChangeLog;
         this.compatibleTypes = null;
     }
-//TODO add conflict types
+
     public AbstractAnalyzer(final List<EFieldTypes> brakeTypes,
                             final List<EFieldTypes> changeTypes,
                             final List<EFieldTypes> defaultTypes,
@@ -88,7 +88,9 @@ public abstract class AbstractAnalyzer implements IAnalyzer {
         }
         for (EFieldTypes type : changeTypes) {
             if (type.equals(((FieldTypePropertiesPOJO) schema.get(key)).enumType())) {
-                logger.info(String.format(onChangeLogMessage, key, type));
+                if(logger.isDebugEnabled()) {
+                    logger.debug(String.format(onChangeLogMessage, key, type));
+                }
                 schema.put(key, fieldTypePropertyOnChange);
                 mappingChangeLog.add(String.format(onChangeLogMessage, key, type));
                 return;
@@ -96,7 +98,9 @@ public abstract class AbstractAnalyzer implements IAnalyzer {
         }
         for (EFieldTypes type : defaultTypes) {
             if (type.equals(((FieldTypePropertiesPOJO) schema.get(key)).enumType())) {
-                logger.info(String.format(onDefaultLogMessage, key, type));
+                if(logger.isDebugEnabled()) {
+                    logger.debug(String.format(onDefaultLogMessage, key, type));
+                }
                 schema.put(key, fieldTypePropertyOnDefault);
                 mappingChangeLog.add(String.format(onChangeLogMessage, key, type));
                 return;
