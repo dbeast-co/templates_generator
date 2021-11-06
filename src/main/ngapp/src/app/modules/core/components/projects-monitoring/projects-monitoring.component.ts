@@ -23,7 +23,7 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
     'docs_for_analyze',
     'analyzed_docs',
     'progress',
-    'status',
+    'project_status',
     'download_buttons',
     'action_buttons',
   ];
@@ -69,7 +69,7 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
           projects.sort((a, b) => {
             switch (this.columnToSort) {
               case 'project_name':
-                return this.onSortColumn(a.project_status, b.project_status);
+                return this.onSortColumn(a.project_name, b.project_name);
               case 'status':
                 return this.onSortColumn(a.project_status, b.project_status);
               case 'start_time':
@@ -147,21 +147,4 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  announceSortChange(event: Sort): void {
-    this.sourceProjectMonitoring.sort = this.sort;
-    // TODO: save column and direction as global variable
-    this.columnToSort = event.active;
-    this.sortDirection = event.direction;
-    if (event.active === 'status') {
-      this.sourceProjectMonitoring.data.sort((a, b) => {
-        if (a.project_status < b.project_status) {
-          return -1;
-        } else if (a.project_status > b.project_status) {
-          return 1;
-        }
-        return 0;
-      });
-    }
-    this.cdr.markForCheck();
-  }
 }
