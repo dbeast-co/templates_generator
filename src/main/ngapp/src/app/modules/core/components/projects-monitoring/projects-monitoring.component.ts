@@ -1,13 +1,13 @@
 import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import { ApiService } from '../../../../shared/api.service';
-import { MatTableDataSource } from '@angular/material/table';
-import { IProjectMonitoring } from '../../../../models/project-monitoring';
-import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
-import { DownloadService } from '../../../../shared/download.service';
-import { interval, Subscription } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
-import {MatSort,Sort} from '@angular/material/sort';
+import {ApiService} from '../../../../shared/api.service';
+import {MatTableDataSource} from '@angular/material/table';
+import {IProjectMonitoring} from '../../../../models/project-monitoring';
+import {Router} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
+import {DownloadService} from '../../../../shared/download.service';
+import {interval, Subscription} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
+import {MatSort, Sort, SortDirection} from '@angular/material/sort';
 
 @Component({
   selector: 'yl-projects-monitoring',
@@ -33,6 +33,9 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
   project_id: string;
   private subscription: Subscription = new Subscription();
   @ViewChild(MatSort) sort: MatSort;
+  private columnToSort: string;
+  private sortDirection: SortDirection;
+
   constructor(
     private apiService: ApiService,
     private router: Router,
@@ -40,13 +43,15 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private downloadService: DownloadService,
     private window: Window
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.subscription.add(
       this.apiService.getSavedProjectsForMonitoring().subscribe((projects) => {
         this.sourceProjectMonitoring =
           new MatTableDataSource<IProjectMonitoring>(projects);
+        // TODO: set default sort by start time
         this.sourceProjectMonitoring.sort = this.sort;
         this.getProjectsMonitoring();
         this.cdr.markForCheck();
@@ -57,13 +62,37 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
   getProjectsMonitoring(): void {
     this.subscription.add(
       interval(10000)
-        .pipe(switchMap(() => this.apiService.getSavedProjectsForMonitoring()))
+        // TODO: set sort by sort variables and direction
+        .pipe(
+          switchMap(() => this.apiService.getSavedProjectsForMonitoring()))
         .subscribe((projects) => {
-          console.log('refresh', projects);
+          projects.sort((a, b) => {
+            switch (this.columnToSort) {
+              case 'project_name':
+                return this.onSortColumn(a.project_status, b.project_status);
+              case 'status':
+                return this.onSortColumn(a.project_status, b.project_status);
+              case 'start_time':
+                return this.onSortColumn(a.start_time, b.start_time);
+              case 'end_time':
+                return this.onSortColumn(a.end_time, b.end_time);
+              case 'progress':
+                return this.onSortColumn(a.execution_progress, b.execution_progress);
+            }
+          });
           this.sourceProjectMonitoring.data = projects;
           this.cdr.markForCheck();
         })
     );
+  }
+
+  onSortColumn(aProperty, bProperty): number {
+    if (aProperty < bProperty) {
+      return -1;
+    } else if (aProperty > bProperty) {
+      return 1;
+    }
+    return 0;
   }
 
   onDeleteProject(element: IProjectMonitoring): void {
@@ -120,6 +149,9 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
 
   announceSortChange(event: Sort): void {
     this.sourceProjectMonitoring.sort = this.sort;
+    // TODO: save column and direction as global variable
+    this.columnToSort = event.active;
+    this.sortDirection = event.direction;
     if (event.active === 'status') {
       this.sourceProjectMonitoring.data.sort((a, b) => {
         if (a.project_status < b.project_status) {
