@@ -15,7 +15,6 @@ import { AnalyzeResponseModel } from '../models/analyze-response.model';
 })
 export class ApiService {
   constructor(private http: HttpClient) {
-    console.log('API SERVICE', environment.serverApi);
   }
 
   getNewProjectConfiguration(): Observable<ProjectConfigurationModel> {

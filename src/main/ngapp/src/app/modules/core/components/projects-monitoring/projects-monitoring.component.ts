@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { ApiService } from '../../../../shared/api.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { IProjectMonitoring } from '../../../../models/project-monitoring';
@@ -7,6 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { DownloadService } from '../../../../shared/download.service';
 import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import {MatSort,Sort} from '@angular/material/sort';
 
 @Component({
   selector: 'yl-projects-monitoring',
@@ -16,11 +17,11 @@ import { switchMap } from 'rxjs/operators';
 export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
   displayedColumnsForSourceProjectMonitoringTable: string[] = [
     'project_name',
+    'start_time',
+    'end_time',
     'docs_in_index',
     'docs_for_analyze',
     'analyzed_docs',
-    'start_time',
-    'end_time',
     'progress',
     'status',
     'download_buttons',
@@ -31,7 +32,7 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
   isShowYesNoDialog: boolean = false;
   project_id: string;
   private subscription: Subscription = new Subscription();
-
+  @ViewChild(MatSort) sort: MatSort;
   constructor(
     private apiService: ApiService,
     private router: Router,
@@ -46,6 +47,7 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
       this.apiService.getSavedProjectsForMonitoring().subscribe((projects) => {
         this.sourceProjectMonitoring =
           new MatTableDataSource<IProjectMonitoring>(projects);
+        this.sourceProjectMonitoring.sort = this.sort;
         this.getProjectsMonitoring();
         this.cdr.markForCheck();
       })
@@ -114,5 +116,20 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+  }
+
+  announceSortChange(event: Sort): void {
+    this.sourceProjectMonitoring.sort = this.sort;
+    if (event.active === 'status') {
+      this.sourceProjectMonitoring.data.sort((a, b) => {
+        if (a.project_status < b.project_status) {
+          return -1;
+        } else if (a.project_status > b.project_status) {
+          return 1;
+        }
+        return 0;
+      });
+    }
+    this.cdr.markForCheck();
   }
 }
