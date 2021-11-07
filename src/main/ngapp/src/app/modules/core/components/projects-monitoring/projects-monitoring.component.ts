@@ -53,7 +53,7 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
           new MatTableDataSource<IProjectMonitoring>(projects);
         // TODO: set default sort by start time
         this.sourceProjectMonitoring.sort = this.sort;
-        // this.getProjectsMonitoring();
+        this.getProjectsMonitoring();
         this.cdr.markForCheck();
       })
     );
