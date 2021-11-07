@@ -289,7 +289,7 @@ public class MappingGenerator {
         templateOutput.setIndexPatterns(indexPatterns);
         templateOutput.setSettings(indexSettings);
         templateOutput.setMappings(templateMapping);
-        if (outputSettings.getAlias() != null) {
+        if (outputSettings.getAlias() != null && !outputSettings.getAlias().isEmpty()) {
             Map<String, Map<String, String>> alias = new HashMap<>();
             alias.put(outputSettings.getAlias(), new HashMap<>());
             templateOutput.setAliases(alias);
@@ -308,7 +308,7 @@ public class MappingGenerator {
         indexOutput.setSettings(indexSettings);
         indexOutput.setMappings(indexMapping);
         String indexFileForTest = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getIndexName() + ".json";
-        if (outputSettings.getAlias() != null) {
+        if (outputSettings.getAlias() != null && !outputSettings.getAlias().isEmpty()) {
             Map<String, Map<String, String>> alias = new HashMap<>();
             alias.put(outputSettings.getAlias(), new HashMap<>());
             indexOutput.setAliases(alias);
