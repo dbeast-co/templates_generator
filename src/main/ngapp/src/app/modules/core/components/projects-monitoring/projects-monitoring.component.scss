@@ -40,28 +40,18 @@
     padding: 20px 41px 20px 0;
     position: relative;
 
-    div {
-      span {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        right: 18px;
+    //div {
+    //  span {
+    //    position: absolute;
+    //    top: 50%;
+    //    transform: translateY(-50%);
+    //    right: 18px;
+    //
+    //
+    //  }
+    //}
 
 
-      }
-    }
-
-    .status__progress {
-      width: 91px;
-      top: auto;
-
-
-      mat-progress-bar {
-        top: auto !important;
-        left: 15px;
-
-      }
-    }
 
     /* display: flex; */
   }
@@ -171,6 +161,14 @@ table.mat-table {
     }
 
 
+  }
+
+}
+.status__progress {
+  display: flex;
+  align-items: center;
+  mat-progress-bar {
+    min-width: 75% !important;
   }
 
 }

@@ -49,8 +49,8 @@
       </td>
     </ng-container>
 
-    <ng-container matColumnDef="progress">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>Progress</th>
+    <ng-container matColumnDef="execution_progress">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header width="200">Progress</th>
       <td mat-cell *matCellDef="let element" class="progress">
         <div class="status__progress">
           <mat-progress-bar mode="determinate" [value]="element?.execution_progress"></mat-progress-bar>
