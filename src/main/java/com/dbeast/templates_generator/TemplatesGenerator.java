@@ -32,8 +32,7 @@ public class TemplatesGenerator {
     public static boolean isDebugMode = false;
     public static String fieldForTest = "DevicePropertyDeviceDescription";
 
-    public TemplatesGenerator() throws Exception {
-        runServer(new String[]{"C:\\projects\\BiDaLab-index_analyzer\\test_app_folder"});
+    public TemplatesGenerator() {
     }
 
     public static void main(String[] args) throws Exception {
