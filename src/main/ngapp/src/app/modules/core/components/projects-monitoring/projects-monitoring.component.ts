@@ -147,4 +147,7 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
+  onSort(event: Sort): void {
+    this.columnToSort = event.active;
+  }
 }
