@@ -1,16 +1,17 @@
 @echo off
 
-set HOME_DIR=%~dp0
-set CONFIG_FILE=%~1
+set TG_HOME_DIR=%~dp0
+set TG_HOME_DIR=%TG_HOME_DIR:~0,-1%
+rem set CONFIG_FILE=%~1
 cd %HOME_DIR%
 
 ECHO ###################################################################
-ECHO Templates generator home folder: %HOME_DIR%
+ECHO Templates generator home folder: %TG_HOME_DIR%
 ECHO ###################################################################
-ECHO Configuration file: %CONFIG_FILE%
+rem ECHO Configuration file: %CONFIG_FILE%
 ECHO #
-copy %HOME_DIR%\config\templates_generator.yml %HOME_DIR%\client\assets
+copy "%TG_HOME_DIR%\config\templates_generator.yml" "%TG_HOME_DIR%\client\assets"
 
-java -Dlog4j2.configurationFile=%HOME_DIR%\config\log4j2.xml -cp %HOME_DIR%\lib\*;%HOME_DIR%\bin\* com.dbeast.templates_generator.TemplatesGenerator %HOME_DIR%
+java -Dlog4j2.configurationFile="%TG_HOME_DIR%\config\log4j2.xml" -cp "%TG_HOME_DIR%\lib\*";"%TG_HOME_DIR%\bin\*" com.dbeast.templates_generator.TemplatesGenerator "%TG_HOME_DIR%"
 
 PAUSE
