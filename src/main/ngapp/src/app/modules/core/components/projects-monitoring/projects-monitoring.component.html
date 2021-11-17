@@ -1,5 +1,4 @@
 <div class="container">
-  <h2>Projects monitoring</h2>
   <table mat-table #table id="sourceIndexListMatSource" class="mat-elevation-z8"
          *ngIf="sourceProjectMonitoring;else showProgressBar"
          [dataSource]="sourceProjectMonitoring" matSort (matSortChange)="onSort($event)">
