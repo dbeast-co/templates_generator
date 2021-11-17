@@ -8,6 +8,7 @@ import {DownloadService} from '../../../../shared/download.service';
 import {interval, Subscription} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 import {MatSort, Sort, SortDirection} from '@angular/material/sort';
+import {HeaderService} from '../../../../shared/header.service';
 
 @Component({
   selector: 'yl-projects-monitoring',
@@ -42,11 +43,13 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef,
     private downloadService: DownloadService,
+    private headerService: HeaderService,
     private window: Window
   ) {
   }
 
   ngOnInit(): void {
+    this.headerService.setHeaderTitle('Projects monitoring'),
     this.subscription.add(
       this.apiService.getSavedProjectsForMonitoring().subscribe((projects) => {
         this.sourceProjectMonitoring =

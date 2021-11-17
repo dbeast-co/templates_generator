@@ -23,6 +23,7 @@ import { DownloadService } from '../../../../shared/download.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntil } from 'rxjs/operators';
 import { DOCUMENT } from '@angular/common';
+import {HeaderService} from '../../../../shared/header.service';
 
 @Component({
   selector: 'yl-project-configuration',
@@ -68,6 +69,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     private router: Router,
     private downloadService: DownloadService,
     private toastr: ToastrService,
+    private headerService: HeaderService,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private document: Document
   ) {}
@@ -84,7 +86,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
             this.newProjectForm = this.formService.getProjectConfigurationForm(
               this.project
             );
-
+            this.headerService.setHeaderTitle('Project settings');
             this.newProjectForm.valueChanges.subscribe((control) => {
               this.isDisableButton = this.newProjectForm.invalid;
             });
@@ -104,6 +106,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
           .subscribe((data) => {
             this.newProjectForm =
               this.formService.getProjectConfigurationForm(data);
+            this.headerService.setHeaderTitle('Project settings');
             this.newProjectForm.valueChanges.subscribe((control) => {
               if (
                 this.project_name.errors ||

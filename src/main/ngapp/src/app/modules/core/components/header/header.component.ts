@@ -5,6 +5,8 @@ import { ToastrService } from 'ngx-toastr';
 import { NewProjectConfigurationStore } from '../../../new-project-configuration/components/store/new-project-configuration-store';
 import { takeUntil } from 'rxjs/operators';
 import { ReplaySubject } from 'rxjs';
+import {HeaderService} from '../../../../shared/header.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'yl-header',
@@ -20,10 +22,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
     private toastr: ToastrService,
+    private headerService: HeaderService,
+    private router: Router,
     private state: NewProjectConfigurationStore
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.headerService.getHeaderTitle().subscribe(title => this.headerTitle = title);
+    if (this.router.url === '/') {
+      this.headerTitle = 'Projects monitoring';
+    }
+  }
 
   /**
    * Click on 'Hamburger' icon to open the menu
