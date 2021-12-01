@@ -163,11 +163,7 @@ mat-icon.mat-icon {
   border-left: 1px solid $whiteColor;
   border-right: 1px solid $whiteColor;
 
-  thead{
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 100 !important;
-  }
+
 
   th {
     position: sticky;
