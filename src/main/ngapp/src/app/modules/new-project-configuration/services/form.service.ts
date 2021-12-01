@@ -147,6 +147,8 @@ export class FormService {
     return this.fb.group({
       add_fields_from_existing_template_name: [
         action?.add_fields_from_existing_template_name,
+        [Validators.required]
+
       ],
       is_add_all_fields: [action?.is_add_all_fields],
       is_add_dynamic_mapping: [action?.is_add_dynamic_mapping],
