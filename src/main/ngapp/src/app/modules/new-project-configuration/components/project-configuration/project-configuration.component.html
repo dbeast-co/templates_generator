@@ -249,6 +249,11 @@
                 >
               </mat-form-field>
 
+              <mat-error class="existing_template_actions"
+                         *ngIf="add_fields_from_existing_template_name?.touched && add_fields_from_existing_template_name?.errors ">
+                This field is required
+              </mat-error>
+
               <mat-checkbox
                 formControlName="is_add_all_fields" (change)="onCheckAddAllFieldsForTemplate($event)">
                 Add all fields
@@ -464,6 +469,11 @@
                        formControlName="add_fields_from_existing_template_name"
                 >
               </mat-form-field>
+
+              <mat-error class="existing_template_actions_index"
+                         *ngIf="add_fields_from_existing_template_name_index?.touched && add_fields_from_existing_template_name_index?.errors ">
+                This field is required
+              </mat-error>
 
               <mat-checkbox
                 (change)="onCheckAddAllFieldsForIndex($event)"

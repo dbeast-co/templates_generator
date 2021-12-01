@@ -388,6 +388,14 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
       ?.get('add_fields_from_existing_template_name');
   }
 
+  get add_fields_from_existing_template_name_index(): AbstractControl | undefined {
+    return this.newProjectForm
+      ?.get('output')
+      ?.get('index_properties')
+      ?.get('existing_template_actions')
+      ?.get('add_fields_from_existing_template_name');
+  }
+
   get is_add_all_fields(): AbstractControl | undefined {
     return this.newProjectForm
       ?.get('output')

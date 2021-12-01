@@ -294,6 +294,18 @@
           .existing_template_actions {
             display: flex;
             flex-direction: column;
+            position: relative;
+
+            mat-error.existing_template_actions{
+              position: absolute;
+              top: 53px;
+              left: 28px;
+            }
+            mat-error.existing_template_actions_index{
+              position: absolute;
+              top: 53px;
+              left: 28px;
+            }
           }
         }
       }
