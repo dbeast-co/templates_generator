@@ -4,8 +4,11 @@
 .container {
   padding: 30px;
   position: relative;
-  max-height: 300px;
   //overflow: auto;
+  .table__wrapper{
+    max-height: 500px;
+    overflow-y: auto;
+  }
   mat-progress-bar.mat-loader {
     top: -13px;
     width: 101.2%;
@@ -28,6 +31,9 @@
   width: 100%;
 
   thead {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
     tr {
       th {
         position: static !important;
