@@ -243,7 +243,7 @@
                [ngClass]="{'show': addAllFieldsToTemplate.checked || is_add_fields_from_existing_templateForTemplate?.value === true}"
           >
             <div class="existing_template_actions" formGroupName="existing_template_actions">
-              <mat-form-field>
+              <mat-form-field class="required">
                 <input matInput type="text" placeholder="Existing template name"
                        formControlName="add_fields_from_existing_template_name"
                 >
@@ -464,7 +464,7 @@
                [ngClass]="{'show': addAllFieldsForIndexProperties.checked || is_add_fields_from_existing_templateForIndex.value === true}"
           >
             <div class="existing_template_actions" formGroupName="existing_template_actions">
-              <mat-form-field>
+              <mat-form-field class="required">
                 <input matInput type="text" placeholder="Existing template name"
                        formControlName="add_fields_from_existing_template_name"
                 >
