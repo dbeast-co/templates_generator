@@ -9,20 +9,20 @@ import {
   Renderer2,
   ViewChild,
 } from '@angular/core';
-import { Observable, ReplaySubject } from 'rxjs';
-import { ProjectConfigurationModel } from '../../../../models/project-configuration.model';
-import { NewProjectConfigurationStore } from '../store/new-project-configuration-store';
-import { FormService } from '../../services/form.service';
-import { AbstractControl, FormGroup, Validators } from '@angular/forms';
-import { MatCheckboxChange } from '@angular/material/checkbox';
-import { SubSink } from 'subsink';
-import { ApiService } from '../../../../shared/api.service';
-import { ToastrService } from 'ngx-toastr';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DownloadService } from '../../../../shared/download.service';
-import { HttpErrorResponse } from '@angular/common/http';
-import { takeUntil } from 'rxjs/operators';
-import { DOCUMENT } from '@angular/common';
+import {Observable, ReplaySubject} from 'rxjs';
+import {ProjectConfigurationModel} from '../../../../models/project-configuration.model';
+import {NewProjectConfigurationStore} from '../store/new-project-configuration-store';
+import {FormService} from '../../services/form.service';
+import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
+import {MatCheckboxChange} from '@angular/material/checkbox';
+import {SubSink} from 'subsink';
+import {ApiService} from '../../../../shared/api.service';
+import {ToastrService} from 'ngx-toastr';
+import {ActivatedRoute, Router} from '@angular/router';
+import {DownloadService} from '../../../../shared/download.service';
+import {HttpErrorResponse} from '@angular/common/http';
+import {takeUntil} from 'rxjs/operators';
+import {DOCUMENT} from '@angular/common';
 import {HeaderService} from '../../../../shared/header.service';
 
 @Component({
@@ -72,7 +72,8 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     private headerService: HeaderService,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private document: Document
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe((params) => {
@@ -769,7 +770,8 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
           this.toastr.error('Something went wrong!', '');
         }
       },
-      () => {}
+      () => {
+      }
     );
   }
 
@@ -1012,16 +1014,16 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
       this.is_done?.value === false ||
       this.is_failed?.value === true ||
       this.newProjectForm.get('actions').get('is_generate_index').value ===
-        false ||
+      false ||
       this.newProjectForm.get('actions').get('is_generate_template').value ===
-        false
+      false
     ) {
       return (this.isDisableButton = true);
     } else if (
       this.newProjectForm.get('actions').get('is_generate_index').value ===
-        false ||
+      false ||
       this.newProjectForm.get('actions').get('is_generate_template').value ===
-        false
+      false
     ) {
       return (this.isDisableButton = false);
     }
@@ -1032,4 +1034,17 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
       return true;
     }
   }
+
+  onCheckAddFieldsFromExistingTemplate(event: MatCheckboxChange, control: AbstractControl): void {
+    console.log(event);
+    if (event.checked) {
+      this.isDisableButton = true;
+      control.setValidators([Validators.required]);
+    } else {
+      this.isDisableButton = false;
+      control.clearValidators();
+    }
+  }
+
+
 }
