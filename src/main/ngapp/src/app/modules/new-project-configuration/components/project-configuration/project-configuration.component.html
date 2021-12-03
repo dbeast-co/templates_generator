@@ -228,7 +228,7 @@
             <div class="row checkboxes_container">
               <mat-checkbox #addAllFieldsToTemplate formControlName="is_add_fields_from_existing_template"
                             [ylDisableControl]=" this.newProjectForm.get('actions').get('is_generate_template').value ===
-      false">Add fields
+      false" (change)="onCheckAddFieldsFromExistingTemplate($event,add_fields_from_existing_template_name)">Add fields
                 from
                 existing template
               </mat-checkbox>
@@ -446,7 +446,7 @@
             <div class="row ">
               <mat-checkbox #addAllFieldsForIndexProperties
                             formControlName="is_add_fields_from_existing_template" [ylDisableControl]="this.newProjectForm.get('actions').get('is_generate_index').value ===
-      false">Add
+      false" (change)="onCheckAddFieldsFromExistingTemplate($event,add_fields_from_existing_template_name_index)">Add
                 fields from
                 existing index
               </mat-checkbox>
