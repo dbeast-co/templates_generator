@@ -1,12 +1,11 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ApiService} from '../../../../shared/api.service';
 import {MatTableDataSource} from '@angular/material/table';
 import {IProjectMonitoring} from '../../../../models/project-monitoring';
 import {Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 import {DownloadService} from '../../../../shared/download.service';
-import {interval, Subscription} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {Subscription} from 'rxjs';
 import {MatSort, Sort, SortDirection} from '@angular/material/sort';
 import {HeaderService} from '../../../../shared/header.service';
 
@@ -36,6 +35,7 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
   @ViewChild(MatSort) sort: MatSort;
   private columnToSort: string;
   private sortDirection: SortDirection;
+   isMobile: boolean = false;
 
   constructor(
     private apiService: ApiService,
@@ -44,11 +44,19 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private downloadService: DownloadService,
     private headerService: HeaderService,
-    private window: Window
+    public window: Window,
+
   ) {
   }
-
+  @HostListener('window:resize', ['$event']) onResize(event): void {
+    if (window.innerWidth <= 1805) {
+      this.isMobile = true;
+    } else {
+      this.isMobile = false;
+    }
+  }
   ngOnInit(): void {
+
     this.headerService.setHeaderTitle('Projects monitoring'),
     this.subscription.add(
       this.apiService.getSavedProjectsForMonitoring().subscribe((projects) => {
@@ -63,30 +71,30 @@ export class ProjectsMonitoringComponent implements OnInit, OnDestroy {
   }
 
   getProjectsMonitoring(): void {
-    this.subscription.add(
-      interval(10000)
-        // TODO: set sort by sort variables and direction
-        .pipe(
-          switchMap(() => this.apiService.getSavedProjectsForMonitoring()))
-        .subscribe((projects) => {
-          projects.sort((a, b) => {
-            switch (this.columnToSort) {
-              case 'project_name':
-                return this.onSortColumn(a.project_name, b.project_name);
-              case 'status':
-                return this.onSortColumn(a.project_status, b.project_status);
-              case 'start_time':
-                return this.onSortColumn(a.start_time, b.start_time);
-              case 'end_time':
-                return this.onSortColumn(a.end_time, b.end_time);
-              case 'progress':
-                return this.onSortColumn(a.execution_progress, b.execution_progress);
-            }
-          });
-          this.sourceProjectMonitoring.data = projects;
-          this.cdr.markForCheck();
-        })
-    );
+    // this.subscription.add(
+    //   interval(10000)
+    //     // TODO: set sort by sort variables and direction
+    //     .pipe(
+    //       switchMap(() => this.apiService.getSavedProjectsForMonitoring()))
+    //     .subscribe((projects) => {
+    //       projects.sort((a, b) => {
+    //         switch (this.columnToSort) {
+    //           case 'project_name':
+    //             return this.onSortColumn(a.project_name, b.project_name);
+    //           case 'status':
+    //             return this.onSortColumn(a.project_status, b.project_status);
+    //           case 'start_time':
+    //             return this.onSortColumn(a.start_time, b.start_time);
+    //           case 'end_time':
+    //             return this.onSortColumn(a.end_time, b.end_time);
+    //           case 'progress':
+    //             return this.onSortColumn(a.execution_progress, b.execution_progress);
+    //         }
+    //       });
+    //       this.sourceProjectMonitoring.data = projects;
+    //       this.cdr.markForCheck();
+    //     })
+    // );
   }
 
   onSortColumn(aProperty, bProperty): number {

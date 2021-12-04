@@ -64,9 +64,9 @@
         <td mat-cell *matCellDef="let element">
         <span
           [ngClass]="{'success': element.project_status === 'SUCCEEDED','new_stopped':element.project_status === 'NEW'||element.project_status === 'STOPPED' ,'warn':element.project_status=== 'ON_FLY' ,'danger': element.project_status === 'FAILED'}"
-          style="cursor: default" [hidden]="window.innerWidth < 1775">{{element.project_status}}</span>
+          style="cursor: default" *ngIf="!isMobile;else isMobileStatus ">{{element.project_status}}</span>
           <ng-template #isMobileStatus>
-          <span [hidden]="window.innerWidth > 1775"
+          <span
                 [ngClass]="{'success': element.project_status === 'SUCCEEDED','new_stopped':element.project_status === 'NEW'||element.project_status === 'STOPPED' ,'warn':element.project_status=== 'ON_FLY' ,'danger': element.project_status === 'FAILED'}"
                 style="cursor: default">{{element.project_status.substring(0, 1)}}</span>
           </ng-template>
@@ -79,7 +79,7 @@
 
           <button mat-raised-button class="download_index" (click)="onDownloadIndex(element)" matTooltip="Download index">
             <img src="assets/icons/file_download_white_18dp.svg" alt="">
-            <span *ngIf="window.innerWidth > 1775;else isIndexMobile">Index</span>
+            <span *ngIf="!isMobile;else isIndexMobile">Index</span>
             <ng-template #isIndexMobile>
               <span>I</span>
             </ng-template>
@@ -88,7 +88,7 @@
           <button mat-raised-button class="download_template" (click)="onDownloadTemplate(element)"
                   matTooltip="Download template">
             <img src="assets/icons/file_download_white_18dp.svg" alt="">
-            <span *ngIf="window.innerWidth > 1775;else isTemplateMobile">Template</span>
+            <span *ngIf="!isMobile;else isTemplateMobile">Template</span>
             <ng-template #isTemplateMobile>
               <span>T</span>
             </ng-template>
@@ -98,7 +98,7 @@
           <button mat-raised-button class="download_changelog" (click)="onDownloadChangeLog(element)"
                   matTooltip="Download change log">
             <img src="assets/icons/file_download_white_18dp.svg" alt="">
-            <span *ngIf="window.innerWidth > 1775;else isLogMobile">Change log</span>
+            <span *ngIf="!isMobile;else isLogMobile">Change log</span>
             <ng-template #isLogMobile><span>C</span></ng-template>
           </button>
 
