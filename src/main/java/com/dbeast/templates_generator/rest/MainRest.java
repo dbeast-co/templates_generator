@@ -66,7 +66,12 @@ public class MainRest {
         /**
          * Initialize Internal exception handler
          */
-        initExceptionHandler((e) -> logger.error("Error while running REST server! Exception: \n" + e));
+        initExceptionHandler((e) -> {
+            logger.error("Error while running REST server! Exception: " + e);
+            if (e.getCause().getMessage().contains("Address already in use")){
+                System.exit(-1);
+            }
+        });
 
         /**
          * Initialize page not found handler
