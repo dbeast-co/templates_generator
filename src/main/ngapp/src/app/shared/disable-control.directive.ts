@@ -1,4 +1,4 @@
-import { Directive, Input, Optional } from '@angular/core';
+import {Directive, Input, OnInit, Optional} from '@angular/core';
 
 @Directive({
   selector: '[ylDisableControl]',
@@ -12,6 +12,7 @@ export class DisableControlDirective {
       this.ngControl.disabled = true;
     }
   }
+
 
   constructor(@Optional() private ngControl: HTMLButtonElement) {}
 }

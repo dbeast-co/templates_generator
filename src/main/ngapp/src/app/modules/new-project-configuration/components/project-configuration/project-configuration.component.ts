@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -31,7 +32,7 @@ import {HeaderService} from '../../../../shared/header.service';
   styleUrls: ['./project-configuration.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectConfigurationComponent implements OnInit, OnDestroy {
+export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterViewInit {
   newProject: Observable<ProjectConfigurationModel>;
   newProjectForm: FormGroup;
   isDisableSourceTestButton: boolean = false;
@@ -59,7 +60,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   isDisableButton: boolean;
   private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-
+@ViewChild('addAllFieldsForIndexProperties')addAllFieldsForIndexProperties: MatCheckboxChange;
   constructor(
     private store: NewProjectConfigurationStore,
     private formService: FormService,
@@ -73,6 +74,14 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     @Inject(DOCUMENT) private document: Document
   ) {
+  }
+  ngAfterViewInit(): void {
+    console.log(this.addAllFieldsForIndexProperties)
+    if(this.addAllFieldsForIndexProperties.checked){
+      console.log('checked');
+    }else{
+      console.log('not checked');
+    }
   }
 
   ngOnInit(): void {
@@ -98,7 +107,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
             this.setValidatorsByCheckboxes();
             this.checkGenerateTemplateAndGenerateIndex();
 
-            this.cdr.markForCheck();
+            this.cdr.detectChanges();
           });
       } else {
         this.store
@@ -180,7 +189,9 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     ) {
       this.disableControls(this.template_properties);
       this.disableControls(this.existing_template_actions);
-      this.cdr.markForCheck();
+    }else {
+      this.enableControls(this.template_properties);
+      this.enableControls(this.existing_template_actions);
     }
 
     if (
@@ -189,7 +200,9 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     ) {
       this.disableControls(this.index_properties);
       this.disableControls(this.existing_template_actionsForIndex);
-      this.cdr.markForCheck();
+    }else {
+      this.enableControls(this.index_properties);
+      this.enableControls(this.existing_template_actionsForIndex);
     }
   }
 
@@ -886,6 +899,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     event: MatCheckboxChange,
     generateTemplate: number
   ): void {
+    debugger
     switch (generateTemplate) {
       case 0:
         if (!event.checked) {
@@ -898,7 +912,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
           this.setValidators(this.index_patternsForTemplate);
           this.enableControls(this.template_properties);
           // this.isDisableButton = false;
-          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         }
         break;
       case 1:
@@ -924,14 +938,14 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
   disableControls(properties: FormGroup): void {
     Object.keys(properties.controls).forEach((key) => {
       properties.get(key).disable();
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     });
   }
 
   enableControls(properties: FormGroup): void {
     Object.keys(properties.controls).forEach((key) => {
       properties.get(key).enable();
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     });
   }
 
@@ -1036,7 +1050,6 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
   }
 
   onCheckAddFieldsFromExistingTemplate(event: MatCheckboxChange, control: AbstractControl): void {
-    console.log(event);
     if (event.checked) {
       this.isDisableButton = true;
       control.setValidators([Validators.required]);

@@ -227,8 +227,7 @@
             </div>
             <div class="row checkboxes_container">
               <mat-checkbox #addAllFieldsToTemplate formControlName="is_add_fields_from_existing_template"
-                            [ylDisableControl]=" this.newProjectForm.get('actions').get('is_generate_template').value ===
-      false" (change)="onCheckAddFieldsFromExistingTemplate($event,add_fields_from_existing_template_name)">Add fields
+                            [ylDisableControl]=" this.newProjectForm.get('actions').get('is_generate_template').value" (change)="onCheckAddFieldsFromExistingTemplate($event,add_fields_from_existing_template_name)">Add fields
                 from
                 existing template
               </mat-checkbox>
@@ -361,7 +360,7 @@
         <div class="col"><h2>Actions</h2>
           <div class="actions">
             <mat-checkbox #generateTemplateCheckbox formControlName="is_generate_template"
-                          (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate
+                        [ylDisableControl]="generateTemplateCheckbox.checked?is_add_fields_from_existing_templateForTemplate?.value === false:is_add_fields_from_existing_templateForTemplate?.value === true"  (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate
               template
             </mat-checkbox>
             <mat-checkbox #generateIndexCheckbox formControlName="is_generate_index"
@@ -446,7 +445,7 @@
             <div class="row ">
               <mat-checkbox #addAllFieldsForIndexProperties
                             formControlName="is_add_fields_from_existing_template" [ylDisableControl]="this.newProjectForm.get('actions').get('is_generate_index').value ===
-      false" (change)="onCheckAddFieldsFromExistingTemplate($event,add_fields_from_existing_template_name_index)">Add
+      false"  (change)="onCheckAddFieldsFromExistingTemplate($event,add_fields_from_existing_template_name_index)" >Add
                 fields from
                 existing index
               </mat-checkbox>
