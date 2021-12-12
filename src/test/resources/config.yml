@@ -1,0 +1,37 @@
+project_name: test2
+project_id: 12gawerha
+input:
+  index_for_analyze: .monitoring-es-*
+  max_docs_for_analyze: 1000000
+  scroll_size: 1000
+
+  elasticsearch:
+    es_host: http://localhost:9200
+    authentication_enabled: false
+    username: user
+    password: password
+    ssl_enabled: false
+    ssl_file: path/to/cert
+
+output:
+  generate_template: true
+  generate_index: true
+
+  template_properties:
+    template_name: test_template
+    index_patterns:
+      - packetbeat-*
+    order: 0
+
+  index_properties:
+    index_name: new_index
+
+  index_settings:
+    number_of_shards: 1
+    number_of_replicas: 1
+    refresh_interval: 30s
+    codec: best_compression
+
+
+
+
