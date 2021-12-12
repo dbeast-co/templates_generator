@@ -25,6 +25,9 @@ Unpack the template_generator.zip file in your local or remote machine
    chmod +x template_generator.sh with path to config file as argument. The example of the config file, you can find in the config folder.
 2. ./template_generator.sh
 
+### Limitations
+- The application does not currently support comparison with Composable templates.
+
 ### Questions... Feedbacks... Suggestions...
 If you'll find any bugs, or have any questions/suggestions/feedbacks, please feel free to open issues, start discussions or mail us: support@dbeast.co 
 
