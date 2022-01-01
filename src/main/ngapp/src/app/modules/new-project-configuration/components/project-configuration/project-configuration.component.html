@@ -227,8 +227,7 @@
             </div>
             <div class="row checkboxes_container">
               <mat-checkbox #addAllFieldsToTemplate formControlName="is_add_fields_from_existing_template"
-                            [ylDisableControl]=" this.newProjectForm.get('actions').get('is_generate_template').value ===
-      false">Add fields
+                            [ylDisableControl]=" this.newProjectForm.get('actions').get('is_generate_template').value" (change)="onCheckAddFieldsFromExistingTemplate($event,add_fields_from_existing_template_name)">Add fields
                 from
                 existing template
               </mat-checkbox>
@@ -243,11 +242,16 @@
                [ngClass]="{'show': addAllFieldsToTemplate.checked || is_add_fields_from_existing_templateForTemplate?.value === true}"
           >
             <div class="existing_template_actions" formGroupName="existing_template_actions">
-              <mat-form-field>
+              <mat-form-field class="required">
                 <input matInput type="text" placeholder="Existing template name"
                        formControlName="add_fields_from_existing_template_name"
                 >
               </mat-form-field>
+
+              <mat-error class="existing_template_actions"
+                         *ngIf="add_fields_from_existing_template_name?.touched && add_fields_from_existing_template_name?.errors ">
+                This field is required
+              </mat-error>
 
               <mat-checkbox
                 formControlName="is_add_all_fields" (change)="onCheckAddAllFieldsForTemplate($event)">
@@ -356,7 +360,7 @@
         <div class="col"><h2>Actions</h2>
           <div class="actions">
             <mat-checkbox #generateTemplateCheckbox formControlName="is_generate_template"
-                          (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate
+                        [ylDisableControl]="generateTemplateCheckbox.checked?is_add_fields_from_existing_templateForTemplate?.value === false:is_add_fields_from_existing_templateForTemplate?.value === true"  (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate
               template
             </mat-checkbox>
             <mat-checkbox #generateIndexCheckbox formControlName="is_generate_index"
@@ -441,7 +445,7 @@
             <div class="row ">
               <mat-checkbox #addAllFieldsForIndexProperties
                             formControlName="is_add_fields_from_existing_template" [ylDisableControl]="this.newProjectForm.get('actions').get('is_generate_index').value ===
-      false">Add
+      false"  (change)="onCheckAddFieldsFromExistingTemplate($event,add_fields_from_existing_template_name_index)" >Add
                 fields from
                 existing index
               </mat-checkbox>
@@ -459,11 +463,16 @@
                [ngClass]="{'show': addAllFieldsForIndexProperties.checked || is_add_fields_from_existing_templateForIndex.value === true}"
           >
             <div class="existing_template_actions" formGroupName="existing_template_actions">
-              <mat-form-field>
-                <input matInput type="text" placeholder="Add fields from existing template"
+              <mat-form-field class="required">
+                <input matInput type="text" placeholder="Existing template name"
                        formControlName="add_fields_from_existing_template_name"
                 >
               </mat-form-field>
+
+              <mat-error class="existing_template_actions_index"
+                         *ngIf="add_fields_from_existing_template_name_index?.touched && add_fields_from_existing_template_name_index?.errors ">
+                This field is required
+              </mat-error>
 
               <mat-checkbox
                 (change)="onCheckAddAllFieldsForIndex($event)"

@@ -17,10 +17,9 @@ import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.core.CountRequest;
 import org.elasticsearch.client.core.CountResponse;
-import org.elasticsearch.client.indices.GetIndexTemplatesRequest;
-import org.elasticsearch.client.indices.GetIndexTemplatesResponse;
-import org.elasticsearch.client.indices.IndexTemplateMetadata;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.client.indices.*;
+import org.elasticsearch.cluster.metadata.ComposableIndexTemplate;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
@@ -31,10 +30,7 @@ import org.elasticsearch.search.aggregations.metrics.MinAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class ElasticsearchController {
     private static final Logger logger = LogManager.getLogger();
@@ -42,13 +38,32 @@ public class ElasticsearchController {
 
     private final ElasticsearchDbProvider elasticsearchClient = new ElasticsearchDbProvider();
 
-    public boolean isTemplateExists(final RestHighLevelClient client,
+    public boolean isTemplateExistsOld(final RestHighLevelClient client,
                                     final String templateName) {
         GetIndexTemplatesResponse response;
         try {
             GetIndexTemplatesRequest request = new GetIndexTemplatesRequest(templateName);
             response = client.indices().getIndexTemplate(request, RequestOptions.DEFAULT);
             return response.getIndexTemplates().size() > 0;
+        } catch (IOException | ElasticsearchStatusException e) {
+            return false;
+        }
+    }
+
+    //TODO add ES version verification
+    public boolean isTemplateExists(final RestHighLevelClient client,
+                                    final String templateName) {
+        boolean result;
+        try {
+            IndexTemplatesExistRequest legacyTemplateRequest = new IndexTemplatesExistRequest(templateName);
+            result =  client.indices().existsTemplate(legacyTemplateRequest, RequestOptions.DEFAULT);
+            if (!result) {
+                GetComposableIndexTemplateRequest composableTemplateRequest = new GetComposableIndexTemplateRequest(templateName);
+                GetComposableIndexTemplatesResponse getTemplatesResponse = client.indices().getIndexTemplate(composableTemplateRequest, RequestOptions.DEFAULT);
+                Map<String, ComposableIndexTemplate> templates = getTemplatesResponse.getIndexTemplates();
+                return templates.size() > 0;
+            }
+            return true;
         } catch (IOException | ElasticsearchStatusException e) {
             return false;
         }

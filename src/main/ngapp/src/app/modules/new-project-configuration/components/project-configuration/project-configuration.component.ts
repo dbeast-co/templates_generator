@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -9,20 +10,21 @@ import {
   Renderer2,
   ViewChild,
 } from '@angular/core';
-import { Observable, ReplaySubject } from 'rxjs';
-import { ProjectConfigurationModel } from '../../../../models/project-configuration.model';
-import { NewProjectConfigurationStore } from '../store/new-project-configuration-store';
-import { FormService } from '../../services/form.service';
-import { AbstractControl, FormGroup, Validators } from '@angular/forms';
-import { MatCheckboxChange } from '@angular/material/checkbox';
-import { SubSink } from 'subsink';
-import { ApiService } from '../../../../shared/api.service';
-import { ToastrService } from 'ngx-toastr';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DownloadService } from '../../../../shared/download.service';
-import { HttpErrorResponse } from '@angular/common/http';
-import { takeUntil } from 'rxjs/operators';
-import { DOCUMENT } from '@angular/common';
+import {Observable, ReplaySubject} from 'rxjs';
+import {ProjectConfigurationModel} from '../../../../models/project-configuration.model';
+import {NewProjectConfigurationStore} from '../store/new-project-configuration-store';
+import {FormService} from '../../services/form.service';
+import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
+import {MatCheckboxChange} from '@angular/material/checkbox';
+import {SubSink} from 'subsink';
+import {ApiService} from '../../../../shared/api.service';
+import {ToastrService} from 'ngx-toastr';
+import {ActivatedRoute, Router} from '@angular/router';
+import {DownloadService} from '../../../../shared/download.service';
+import {HttpErrorResponse} from '@angular/common/http';
+import {takeUntil} from 'rxjs/operators';
+import {DOCUMENT} from '@angular/common';
+import {HeaderService} from '../../../../shared/header.service';
 
 @Component({
   selector: 'yl-project-configuration',
@@ -30,7 +32,7 @@ import { DOCUMENT } from '@angular/common';
   styleUrls: ['./project-configuration.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectConfigurationComponent implements OnInit, OnDestroy {
+export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterViewInit {
   newProject: Observable<ProjectConfigurationModel>;
   newProjectForm: FormGroup;
   isDisableSourceTestButton: boolean = false;
@@ -58,7 +60,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   isDisableButton: boolean;
   private destroyed$: ReplaySubject<boolean> = new ReplaySubject(1);
-
+@ViewChild('addAllFieldsForIndexProperties')addAllFieldsForIndexProperties: MatCheckboxChange;
   constructor(
     private store: NewProjectConfigurationStore,
     private formService: FormService,
@@ -68,9 +70,19 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     private router: Router,
     private downloadService: DownloadService,
     private toastr: ToastrService,
+    private headerService: HeaderService,
     private renderer: Renderer2,
     @Inject(DOCUMENT) private document: Document
-  ) {}
+  ) {
+  }
+  ngAfterViewInit(): void {
+    console.log(this.addAllFieldsForIndexProperties)
+    if(this.addAllFieldsForIndexProperties.checked){
+      console.log('checked');
+    }else{
+      console.log('not checked');
+    }
+  }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe((params) => {
@@ -84,7 +96,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
             this.newProjectForm = this.formService.getProjectConfigurationForm(
               this.project
             );
-
+            this.headerService.setHeaderTitle('Project settings');
             this.newProjectForm.valueChanges.subscribe((control) => {
               this.isDisableButton = this.newProjectForm.invalid;
             });
@@ -95,7 +107,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
             this.setValidatorsByCheckboxes();
             this.checkGenerateTemplateAndGenerateIndex();
 
-            this.cdr.markForCheck();
+            this.cdr.detectChanges();
           });
       } else {
         this.store
@@ -104,6 +116,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
           .subscribe((data) => {
             this.newProjectForm =
               this.formService.getProjectConfigurationForm(data);
+            this.headerService.setHeaderTitle('Project settings');
             this.newProjectForm.valueChanges.subscribe((control) => {
               if (
                 this.project_name.errors ||
@@ -176,7 +189,9 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     ) {
       this.disableControls(this.template_properties);
       this.disableControls(this.existing_template_actions);
-      this.cdr.markForCheck();
+    }else {
+      this.enableControls(this.template_properties);
+      this.enableControls(this.existing_template_actions);
     }
 
     if (
@@ -185,7 +200,9 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     ) {
       this.disableControls(this.index_properties);
       this.disableControls(this.existing_template_actionsForIndex);
-      this.cdr.markForCheck();
+    }else {
+      this.enableControls(this.index_properties);
+      this.enableControls(this.existing_template_actionsForIndex);
     }
   }
 
@@ -381,6 +398,14 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     return this.newProjectForm
       ?.get('output')
       ?.get('template_properties')
+      ?.get('existing_template_actions')
+      ?.get('add_fields_from_existing_template_name');
+  }
+
+  get add_fields_from_existing_template_name_index(): AbstractControl | undefined {
+    return this.newProjectForm
+      ?.get('output')
+      ?.get('index_properties')
       ?.get('existing_template_actions')
       ?.get('add_fields_from_existing_template_name');
   }
@@ -758,7 +783,8 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
           this.toastr.error('Something went wrong!', '');
         }
       },
-      () => {}
+      () => {
+      }
     );
   }
 
@@ -873,6 +899,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
     event: MatCheckboxChange,
     generateTemplate: number
   ): void {
+    debugger
     switch (generateTemplate) {
       case 0:
         if (!event.checked) {
@@ -885,7 +912,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
           this.setValidators(this.index_patternsForTemplate);
           this.enableControls(this.template_properties);
           // this.isDisableButton = false;
-          this.cdr.markForCheck();
+          this.cdr.detectChanges();
         }
         break;
       case 1:
@@ -911,14 +938,14 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
   disableControls(properties: FormGroup): void {
     Object.keys(properties.controls).forEach((key) => {
       properties.get(key).disable();
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     });
   }
 
   enableControls(properties: FormGroup): void {
     Object.keys(properties.controls).forEach((key) => {
       properties.get(key).enable();
-      this.cdr.markForCheck();
+      this.cdr.detectChanges();
     });
   }
 
@@ -1001,16 +1028,16 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
       this.is_done?.value === false ||
       this.is_failed?.value === true ||
       this.newProjectForm.get('actions').get('is_generate_index').value ===
-        false ||
+      false ||
       this.newProjectForm.get('actions').get('is_generate_template').value ===
-        false
+      false
     ) {
       return (this.isDisableButton = true);
     } else if (
       this.newProjectForm.get('actions').get('is_generate_index').value ===
-        false ||
+      false ||
       this.newProjectForm.get('actions').get('is_generate_template').value ===
-        false
+      false
     ) {
       return (this.isDisableButton = false);
     }
@@ -1021,4 +1048,16 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy {
       return true;
     }
   }
+
+  onCheckAddFieldsFromExistingTemplate(event: MatCheckboxChange, control: AbstractControl): void {
+    if (event.checked) {
+      this.isDisableButton = true;
+      control.setValidators([Validators.required]);
+    } else {
+      this.isDisableButton = false;
+      control.clearValidators();
+    }
+  }
+
+
 }

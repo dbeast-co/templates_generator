@@ -2,7 +2,7 @@ package com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class InputSettingsPOJO implements Cloneable{
+public class InputSettingsPOJO implements Cloneable {
     @JsonProperty("index_for_analyze")
     private String indexForAnalyze;
     @JsonProperty("max_docs_for_analyze")
@@ -27,7 +27,11 @@ public class InputSettingsPOJO implements Cloneable{
     }
 
     public void setIndexForAnalyze(String indexForAnalyze) {
-        this.indexForAnalyze = indexForAnalyze;
+        if (indexForAnalyze != null && !indexForAnalyze.isEmpty()) {
+            this.indexForAnalyze = indexForAnalyze.trim();
+        } else {
+            this.indexForAnalyze = indexForAnalyze;
+        }
     }
 
     public long getMaxDocsForAnalyze() {
