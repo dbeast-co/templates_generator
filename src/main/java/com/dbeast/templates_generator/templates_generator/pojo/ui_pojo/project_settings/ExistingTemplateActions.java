@@ -3,7 +3,6 @@ package com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ExistingTemplateActions {
-//    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("is_add_all_fields")
     private boolean isAddAllFields= true;
 
@@ -101,6 +100,10 @@ public class ExistingTemplateActions {
     }
 
     public void setAddFieldsFromExistingTemplateName(String addFieldsFromExistingTemplateName) {
-        this.addFieldsFromExistingTemplateName = addFieldsFromExistingTemplateName;
+        if (addFieldsFromExistingTemplateName!= null && !addFieldsFromExistingTemplateName.isEmpty()) {
+            this.addFieldsFromExistingTemplateName = addFieldsFromExistingTemplateName.trim();
+        } else {
+            this.addFieldsFromExistingTemplateName = addFieldsFromExistingTemplateName;
+        }
     }
 }

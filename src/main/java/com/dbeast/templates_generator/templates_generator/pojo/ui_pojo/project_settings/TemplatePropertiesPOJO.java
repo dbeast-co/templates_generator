@@ -50,7 +50,11 @@ public class TemplatePropertiesPOJO implements Cloneable {
     }
 
     public void setTemplateName(String templateName) {
-        this.templateName = templateName;
+        if (templateName!=null && !templateName.isEmpty()) {
+            this.templateName = templateName.trim();
+        } else {
+            this.templateName = templateName;
+        }
     }
 
     @JsonProperty("index_patterns")
