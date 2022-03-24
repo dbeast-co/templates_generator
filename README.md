@@ -1,6 +1,8 @@
 ## Welcome to templates generator application for Elasticsearch
 This application will help you to generate the template and/or test index, based on your data in the Elasticsearch index
 
+Complete guide can be found on our web site: [https://dbeast.co/#/templates-generator](https://dbeast.co/#/templates-generator).
+
 #### Features:
 1. Template generation
 2. Test index with mappings and settings generation 
@@ -32,5 +34,5 @@ Unpack the template_generator.zip file in your local or remote machine
 If you'll find any bugs, or have any questions/suggestions/feedbacks, please feel free to open issues, start discussions or mail us: support@dbeast.co 
 
 ### Terms and conditions
-- Copyright © 2021 Matskeplishvili Vakhtang
+- Copyright © 2021 Matskeplishvili Vakhtang  [https://dbeast.co](https://dbeast.co).
 - Licensed under the Apache License, Version 2.0
