@@ -201,7 +201,8 @@ public class MappingGeneratorController {
         String fileName;
         switch (fileType) {
             case "template": {
-                fileName = projectsMap.get(projectId).getOutputSettings().getTemplateProperties().getTemplateName() + ".json";
+//                fileName = projectsMap.get(projectId).getOutputSettings().getTemplateProperties().getTemplateName() + ".json";
+                fileName = EAppSettings.ANALYZER_ALL_LOGS_FILE.getConfigurationParameter();
                 break;
             }
             case "index": {

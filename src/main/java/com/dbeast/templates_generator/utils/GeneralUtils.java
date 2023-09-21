@@ -26,7 +26,9 @@ public class GeneralUtils {
     private final static ObjectMapper mapper = new ObjectMapper();
     private final ClassLoader classLoader = getClass().getClassLoader();
 
-    public static boolean saveJsonToToFileWithAdditionalFirstString(final String fileAbsolutePath, final String firstString, final Object context) {
+    public static boolean saveJsonToToFileWithAdditionalFirstString(final String fileAbsolutePath,
+                                                                    final String firstString,
+                                                                    final Object context) {
         File file = new File(fileAbsolutePath);
         try {
             JsonGenerator jsonGenerator = mapper.getFactory().createGenerator(new FileOutputStream(file));

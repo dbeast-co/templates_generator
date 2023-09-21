@@ -293,8 +293,9 @@ public class ElasticsearchController {
             Max max = aggregations.get("max");
 
             return new DataPeriodFromEs(
-                    new Double(min.getValue()).longValue(),
-                    new Double(max.getValue()).longValue()
+                    (long)min.getValue(),
+//                    new Double(min.getValue()).longValue(),
+                    (long)max.getValue()
             );
         } catch (IOException | ElasticsearchException e) {
             logger.error(e);

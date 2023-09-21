@@ -14,9 +14,7 @@ import com.dbeast.templates_generator.templates_generator.pojo.DateFormatsPOJO;
 import com.dbeast.templates_generator.templates_generator.pojo.fields_properties.FieldTypePropertiesPOJO;
 import com.dbeast.templates_generator.templates_generator.pojo.fields_properties.IgnoreAbovePropertiesPOJO;
 import com.dbeast.templates_generator.templates_generator.pojo.fields_properties.TextAndKeywordPropertiesPOJO;
-import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.IndexOutputPOJO;
-import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.NormalizerPOJO;
-import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.TemplateOutputPOJO;
+import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.*;
 import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_settings.*;
 import com.dbeast.templates_generator.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,10 +29,7 @@ import org.elasticsearch.client.indices.IndexTemplateMetadata;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //TODO change to configuration file from statics
 public class MappingGenerator {
@@ -57,7 +52,6 @@ public class MappingGenerator {
     public MappingGenerator(final List<DateFormatsPOJO> dateFormats,
                             final ProjectPOJO project) {
         this.project = project;
-//        boolean isStopped = project.getStatus().isStopped();
         this.textAnalyzer = new TextAnalyzer(dateFormats, project.getMappingChangesLog());
         this.dateAnalyzer = new DateAnalyzer(dateFormats, project.getMappingChangesLog());
         this.booleanAnalyzer = new BooleanAnalyzer(project.getMappingChangesLog());
@@ -181,8 +175,23 @@ public class MappingGenerator {
                                              final RestHighLevelClient client,
                                              boolean generationResult) {
         Map<String, Object> indexGeneratedMapping = cloneMapping(templateGeneratedMapping);
-        if (project.getActions().isGenerateTemplate()) {
-            Map<String, Map<String, Object>> indexSettings = project.getOutputSettings().getTemplateProperties().getIndexSettings().settingsAsMap(new HashMap<>());
+        Map<String, Map<String, Object>> indexSettings = project.getOutputSettings().getTemplateProperties().getIndexSettings().settingsAsMap(new HashMap<>());
+        Map<String, Map<String, String>> alias = new HashMap<>();
+        if (project.getOutputSettings().getTemplateProperties().getAlias() != null && !project.getOutputSettings().getTemplateProperties().getAlias().isEmpty()) {
+            alias.put(project.getOutputSettings().getTemplateProperties().getAlias(), new HashMap<>());
+        }
+        if (project.getOutputSettings().getTemplateProperties().isAddNormalizerToKeywordFields()) {
+            indexSettings.put("analysis", new HashMap<String, Object>() {{
+                put("normalizer",
+                        new HashMap<String, Object>() {{
+                            put(EAppSettings.DEFAULT_NORMALIZER_NAME.getConfigurationParameter(), new NormalizerPOJO());
+                        }});
+            }});
+            addNormalizerToAllKeywordFields(templateGeneratedMapping);
+        }
+
+        //Legacy template generation
+        if (project.getActions().isGenerateLegacyTemplate()) {
             if (project.getOutputSettings().getTemplateProperties().isAddFieldsFromExistingTemplate() &&
                     project.getOutputSettings().getTemplateProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName() != null &&
                     !project.getOutputSettings().getTemplateProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName().isEmpty()) {
@@ -191,23 +200,62 @@ public class MappingGenerator {
                         castMapToObject(templateGeneratedMapping.get("mappings")),
                         indexSettings);
             }
-            if (project.getOutputSettings().getTemplateProperties().isAddNormalizerToKeywordFields()) {
-                indexSettings.put("analysis", new HashMap<String, Object>() {{
-                    put("normalizer",
-                            new HashMap<String, Object>() {{
-                                put(EAppSettings.DEFAULT_NORMALIZER_NAME.getConfigurationParameter(), new NormalizerPOJO());
-                            }});
-                }});
-                addNormalizerToAllKeywordFields(templateGeneratedMapping);
-            }
-            generationResult = generateTemplate(project.getOutputSettings().getTemplateProperties(), projectId,
+            generationResult = generationResult && generateLegacyTemplate(project.getOutputSettings().getTemplateProperties(),
+                    projectId,
                     castMapToObject(templateGeneratedMapping.get("mappings")),
-                    indexSettings);
+                    indexSettings,
+                    alias);
+        }
+        //Index template generation
+        if (project.getActions().isGenerateIndexTemplate()) {
+            List<String> componentsList = new LinkedList<>();
+            if (project.getActions().isGenerateDedicatedComponentsTemplate()) {
+                if (project.getActions().isSeparateMappingsAndSettings()) {
+                    //Generate mapping component
+                    generationResult = generationResult && generateComponentTemplate(
+                            project.getOutputSettings().getTemplateProperties(),
+                            projectId,
+                            castMapToObject(templateGeneratedMapping.get("mappings")),
+                            new HashMap<>(),
+                            "-mapping-component");
+                    //Generate settings component
+                    generationResult = generationResult && generateComponentTemplate(
+                            project.getOutputSettings().getTemplateProperties(),
+                            projectId,
+                            new HashMap<>(),
+                            indexSettings,
+                            "-settings-component");
+                    componentsList.add(project.getOutputSettings().getTemplateProperties().getTemplateName() + "-mapping-component");
+                    componentsList.add(project.getOutputSettings().getTemplateProperties().getTemplateName() + "-settings-component");
+                } else {
+                    // Generate all in one component
+                    generationResult = generationResult && generateComponentTemplate(
+                            project.getOutputSettings().getTemplateProperties(),
+                            projectId,
+                            castMapToObject(templateGeneratedMapping.get("mappings")),
+                            indexSettings,
+                            "-component");
+                    componentsList.add(project.getOutputSettings().getTemplateProperties().getTemplateName() + "-component");
+                }
+                generationResult = generationResult && generateIndexTemplate(
+                        project.getOutputSettings().getTemplateProperties(),
+                        projectId,
+                        new HashMap<>(),
+                        new HashMap<>(),
+                        componentsList,
+                        alias);
+            } else {
+                generationResult = generationResult && generateIndexTemplate(
+                        project.getOutputSettings().getTemplateProperties(),
+                        projectId,
+                        castMapToObject(templateGeneratedMapping.get("mappings")),
+                        indexSettings,
+                        componentsList,
+                        alias);
+            }
         }
 
         if (project.getActions().isGenerateIndex()) {
-
-            Map<String, Map<String, Object>> indexSettings = project.getOutputSettings().getIndexProperties().getIndexSettings().settingsAsMap(new HashMap<>());
             if (project.getOutputSettings().getIndexProperties().isAddFieldsFromExistingTemplate() &&
                     project.getOutputSettings().getIndexProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName() != null &&
                     !project.getOutputSettings().getIndexProperties().getExistingTemplateActions().getAddFieldsFromExistingTemplateName().isEmpty()) {
@@ -279,24 +327,68 @@ public class MappingGenerator {
                 .forEach(entry -> indexSettings.put(entry.getKey(), entry.getValue()));
     }
 
-    private boolean generateTemplate(final TemplatePropertiesPOJO outputSettings,
-                                     final String projectName,
-                                     final Map<String, Object> templateMapping,
-                                     final Map<String, Map<String, Object>> indexSettings) {
-        TemplateOutputPOJO templateOutput = new TemplateOutputPOJO();
+    private boolean generateLegacyTemplate(final TemplatePropertiesPOJO outputSettings,
+                                           final String projectName,
+                                           final Map<String, Object> templateMapping,
+                                           final Map<String, Map<String, Object>> indexSettings,
+                                           final Map<String, Map<String, String>> alias) {
+        LegacyTemplateOutputPOJO templateOutput = new LegacyTemplateOutputPOJO();
         templateOutput.setOrder(outputSettings.getOrder());
         List<String> indexPatterns = outputSettings.generateIndexPatternsForTemplate();
         templateOutput.setIndexPatterns(indexPatterns);
         templateOutput.setSettings(indexSettings);
         templateOutput.setMappings(templateMapping);
-        if (outputSettings.getAlias() != null && !outputSettings.getAlias().isEmpty()) {
-            Map<String, Map<String, String>> alias = new HashMap<>();
-            alias.put(outputSettings.getAlias(), new HashMap<>());
-            templateOutput.setAliases(alias);
-        }
-        String templateFile = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName() + ".json";
+        templateOutput.setAliases(alias);
+        String templateFile = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName() + "-legacy-template.json";
         return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
                 generateTemplateAPIRequest(outputSettings.getTemplateName()),
+                templateOutput);
+    }
+
+    private boolean generateIndexTemplate(final TemplatePropertiesPOJO outputSettings,
+                                          final String projectName,
+                                          final Map<String, Object> templateMapping,
+                                          final Map<String, Map<String, Object>> indexSettings,
+                                          final List<String> componentsList,
+                                          final Map<String, Map<String, String>> alias) {
+        IndexTemplateOutputPOJO templateOutput = new IndexTemplateOutputPOJO();
+        templateOutput.setPriority(outputSettings.getOrder());
+        List<String> indexPatterns = outputSettings.generateIndexPatternsForTemplate();
+        templateOutput.setIndexPatterns(indexPatterns);
+        TemplateOutputPOJO template = new TemplateOutputPOJO();
+        if (indexSettings.size() > 0) {
+            template.setSettings(indexSettings);
+        }
+        if (templateMapping.size() > 0) {
+            template.setMappings(templateMapping);
+        }
+        template.setAliases(alias);
+        templateOutput.setTemplate(template);
+        templateOutput.setComposed_of(componentsList);
+
+        String templateFile = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName() + "-index-template.json";
+        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
+                generateIndexTemplateAPIRequest(outputSettings.getTemplateName()),
+                templateOutput);
+    }
+
+    private boolean generateComponentTemplate(final TemplatePropertiesPOJO outputSettings,
+                                              final String projectName,
+                                              final Map<String, Object> templateMapping,
+                                              final Map<String, Map<String, Object>> indexSettings,
+                                              final String fileNameSuffix) {
+        ComponentTemplateOutputPOJO templateOutput = new ComponentTemplateOutputPOJO();
+        TemplateOutputPOJO template = new TemplateOutputPOJO();
+        if (indexSettings.size() > 0) {
+            template.setSettings(indexSettings);
+        }
+        if (templateMapping.size() > 0) {
+            template.setMappings(templateMapping);
+        }
+        templateOutput.setTemplate(template);
+        String templateFile = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName() + fileNameSuffix + ".json";
+        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
+                generateComponentTemplateAPIRequest(outputSettings.getTemplateName() + fileNameSuffix),
                 templateOutput);
     }
 
@@ -350,6 +442,14 @@ public class MappingGenerator {
 
     private String generateTemplateAPIRequest(final String templateName) {
         return "PUT _template/" + templateName;
+    }
+
+    private String generateComponentTemplateAPIRequest(final String templateName) {
+        return "PUT _component_template/" + templateName;
+    }
+
+    private String generateIndexTemplateAPIRequest(final String templateName) {
+        return "PUT _index_template/" + templateName;
     }
 
     private String generateIndexAPIRequest(final String indexName) {
@@ -440,7 +540,8 @@ public class MappingGenerator {
                     clonedMapping.put(key,
                             value.getClass().getConstructor(EFieldTypes.class)
                                     .newInstance(((FieldTypePropertiesPOJO) value).enumType()));
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException e) {
                     e.printStackTrace();
                 }
             } else {

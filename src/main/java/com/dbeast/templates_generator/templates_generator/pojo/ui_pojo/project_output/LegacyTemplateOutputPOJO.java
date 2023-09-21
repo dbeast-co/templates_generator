@@ -7,14 +7,34 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class TemplateOutputPOJO {
+public class LegacyTemplateOutputPOJO {
+    @JsonProperty("order")
+    private int order;
+    @JsonProperty("index_patterns")
+    private List<String> indexPatterns = new LinkedList<>();
     @JsonProperty("settings")
     private Map<String, Map<String, Object>> settings = new HashMap<>();
+//    private IndexInnerSettingsPOJO settings;
     @JsonProperty("mappings")
-    private Map<String, Object> mappings = new HashMap<>();
+    private Map<String, Object> mappings;
     @JsonProperty("aliases")
     private Map<String, Map<String, String>> aliases= new HashMap<>();
 
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public List<String> getIndexPatterns() {
+        return indexPatterns;
+    }
+
+    public void setIndexPatterns(List<String> indexPatterns) {
+        this.indexPatterns = indexPatterns;
+    }
 
     public Map<String, Object> getMappings() {
         return mappings;
