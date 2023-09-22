@@ -76,6 +76,10 @@ export interface IStatus {
 export interface IActions {
   is_generate_template: boolean;
   is_generate_index: boolean;
+  is_generate_dedicated_components_template: boolean;
+  is_generate_index_template: boolean;
+  is_generate_legacy_template: boolean;
+  is_separate_mappings_and_settings: boolean;
 }
 
 export interface IClusterStatus {

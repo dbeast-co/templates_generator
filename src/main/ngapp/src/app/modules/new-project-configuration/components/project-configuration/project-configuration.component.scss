@@ -315,19 +315,34 @@
     .actions_container {
       @extend .template_properties_container;
       grid-area: C;
-      max-height: 14.1%;
+      max-height: 19.5%;
       max-width: 100%;
       align-self: flex-start;
-      margin-top: 4rem;
+      margin-top: 3.1rem;
+
 
       .col {
         display: flex;
         width: 100%;
 
         .actions {
-          display: flex;
-          justify-content: space-around;
+          //display: flex;
+          //justify-content: space-around;
+          //flex-wrap: wrap;
+          //max-width: 80%;
+          display: grid;
+          grid-template-columns: repeat(3,1fr);
           margin-top: 1rem;
+          grid-gap: 0.4rem;
+
+          mat-checkbox{
+            &:last-child{
+              //justify-self: flex-end;
+              //transform: translateX(105px);
+            }
+          }
+
+
         }
       }
 

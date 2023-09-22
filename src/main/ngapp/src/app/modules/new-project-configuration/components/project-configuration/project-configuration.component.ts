@@ -92,6 +92,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
           .pipe(takeUntil(this.destroyed$))
           .subscribe((data) => {
             this.project = data;
+            console.log(this.project);
             this.checkIsInActiveProcess(this.project);
             this.newProjectForm = this.formService.getProjectConfigurationForm(
               this.project
@@ -899,7 +900,6 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
     event: MatCheckboxChange,
     generateTemplate: number
   ): void {
-    debugger
     switch (generateTemplate) {
       case 0:
         if (!event.checked) {
