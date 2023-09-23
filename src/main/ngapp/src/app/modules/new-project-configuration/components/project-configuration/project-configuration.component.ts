@@ -470,15 +470,15 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
       ?.get('index_settings')
       ?.get('refresh_interval');
   }
-  get isGenerateDedicatedComponentsTemplate():FormGroup | undefined {
+  get isGenerateDedicatedComponentsTemplate():FormControl | undefined {
     return this.newProjectForm
       ?.get('actions')
-      ?.get('is_generate_dedicated_components_template') as FormGroup;
+      ?.get('is_generate_dedicated_components_template') as FormControl;
   }
-  get isSeparateMappingsAndSettings(): AbstractControl | undefined {
+  get isSeparateMappingsAndSettings(): FormControl | undefined {
     return this.newProjectForm
       ?.get('actions')
-      ?.get('is_separate_mappings_and_settings');
+      ?.get('is_separate_mappings_and_settings') as FormControl;
   }
 
   //endregion
@@ -914,8 +914,8 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
       case 0:
         if (!event.checked) {
           this.disableControls(this.template_properties);
-          // this.disableControls(this.isGenerateDedicatedComponentsTemplate);
-          // this.disableControls(this.isSeparateMappingsAndSettings);
+          this.disableControl(this.isGenerateDedicatedComponentsTemplate);
+          this.disableControl(this.isSeparateMappingsAndSettings);
           // TODO: is_generate_dedicated_components_template,is_separate_mappings_and_settings
           this.clearValidators(this.template_nameForTemplate);
           this.clearValidators(this.index_patternsForTemplate);
@@ -924,6 +924,8 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
           this.setValidators(this.template_nameForTemplate);
           this.setValidators(this.index_patternsForTemplate);
           this.enableControls(this.template_properties);
+          this.enableControl(this.isGenerateDedicatedComponentsTemplate);
+          this.enableControl(this.isSeparateMappingsAndSettings);
           // this.isDisableButton = false;
           this.cdr.detectChanges();
         }
@@ -954,6 +956,15 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
       this.cdr.detectChanges();
     });
   }
+  disableControl(control: AbstractControl): void {
+    control.disable();
+    this.cdr.detectChanges();
+  }
+  enableControl(control: AbstractControl): void {
+    control.enable();
+    this.cdr.detectChanges();
+  }
+
 
   enableControls(properties: FormGroup): void {
     Object.keys(properties.controls).forEach((key) => {

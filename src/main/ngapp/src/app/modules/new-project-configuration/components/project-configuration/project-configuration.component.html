@@ -371,10 +371,10 @@
             <mat-checkbox #generateTemplateCheckbox formControlName="is_generate_index_template" (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate index template</mat-checkbox>
             <mat-checkbox formControlName="is_generate_legacy_template">Generate legacy template</mat-checkbox>
             <ng-container  >
-              <mat-checkbox [disabled]="!generateTemplateCheckbox.checked" formControlName="is_generate_dedicated_components_template">Generate dedicated components
+              <mat-checkbox  formControlName="is_generate_dedicated_components_template">Generate dedicated components
                 template
               </mat-checkbox>
-              <mat-checkbox [disabled]="!generateTemplateCheckbox.checked" formControlName="is_separate_mappings_and_settings">Separate mappings settings
+              <mat-checkbox  formControlName="is_separate_mappings_and_settings">Separate mappings settings
               </mat-checkbox>
             </ng-container>
             <mat-checkbox formControlName="is_generate_index" (change)="onCheckGenerateTemplateOrIndex($event,1)">Generate index</mat-checkbox>
