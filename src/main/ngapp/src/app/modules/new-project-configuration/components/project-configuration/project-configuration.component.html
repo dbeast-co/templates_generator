@@ -369,7 +369,7 @@
 <!--              index-->
 <!--            </mat-checkbox>-->
             <mat-checkbox #generateTemplateCheckbox formControlName="is_generate_index_template" (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate index template</mat-checkbox>
-            <mat-checkbox formControlName="is_generate_legacy_template">Generate legacy template</mat-checkbox>
+            <mat-checkbox formControlName="is_generate_legacy_template" (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate legacy template</mat-checkbox>
             <ng-container  >
               <mat-checkbox  formControlName="is_generate_dedicated_components_template">Generate dedicated components
                 template
