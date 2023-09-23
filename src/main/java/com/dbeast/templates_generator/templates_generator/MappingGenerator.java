@@ -63,6 +63,7 @@ public class MappingGenerator {
         this.templatesComparator = new TemplatesComparator(project, dateFormats);
     }
 
+
     public void generate(final String raw,
                          final Map<String, Object> generatedMapping) {
         ObjectMapper mapper = new ObjectMapper();
@@ -133,6 +134,9 @@ public class MappingGenerator {
             GeneralUtils.zipDirectory(TemplatesGenerator.projectsFolder + projectId,
                     TemplatesGenerator.projectsFolder + projectId + "/" +
                             EAppSettings.ANALYZER_ALL_LOGS_FILE.getConfigurationParameter());
+            GeneralUtils.zipTemplatesDirectory(TemplatesGenerator.projectsFolder + projectId,
+                    TemplatesGenerator.projectsFolder + projectId + "/" +
+                            EAppSettings.ANALYZER_TEMPLATE_ZIP_FILE.getConfigurationParameter());
             return generationResult;
         } else {
             throw new IndexNotFoundOrEmptyException(project.getInputSettings().getInputSettings().getIndexForAnalyze());
@@ -176,7 +180,7 @@ public class MappingGenerator {
                                              boolean generationResult) {
         Map<String, Object> indexGeneratedMapping = cloneMapping(templateGeneratedMapping);
         Map<String, Map<String, Object>> indexSettings = project.getOutputSettings().getTemplateProperties().getIndexSettings().settingsAsMap(new HashMap<>());
-        Map<String, Map<String, String>> alias = new HashMap<>();
+        Map<String, Object> alias = new HashMap<>();
         if (project.getOutputSettings().getTemplateProperties().getAlias() != null && !project.getOutputSettings().getTemplateProperties().getAlias().isEmpty()) {
             alias.put(project.getOutputSettings().getTemplateProperties().getAlias(), new HashMap<>());
         }
@@ -200,7 +204,8 @@ public class MappingGenerator {
                         castMapToObject(templateGeneratedMapping.get("mappings")),
                         indexSettings);
             }
-            generationResult = generationResult && generateLegacyTemplate(project.getOutputSettings().getTemplateProperties(),
+            generationResult = generationResult && generateLegacyTemplate(
+                    project.getOutputSettings().getTemplateProperties(),
                     projectId,
                     castMapToObject(templateGeneratedMapping.get("mappings")),
                     indexSettings,
@@ -331,7 +336,7 @@ public class MappingGenerator {
                                            final String projectName,
                                            final Map<String, Object> templateMapping,
                                            final Map<String, Map<String, Object>> indexSettings,
-                                           final Map<String, Map<String, String>> alias) {
+                                           final Map<String, Object> alias) {
         LegacyTemplateOutputPOJO templateOutput = new LegacyTemplateOutputPOJO();
         templateOutput.setOrder(outputSettings.getOrder());
         List<String> indexPatterns = outputSettings.generateIndexPatternsForTemplate();
@@ -350,7 +355,7 @@ public class MappingGenerator {
                                           final Map<String, Object> templateMapping,
                                           final Map<String, Map<String, Object>> indexSettings,
                                           final List<String> componentsList,
-                                          final Map<String, Map<String, String>> alias) {
+                                          final Map<String, Object> alias) {
         IndexTemplateOutputPOJO templateOutput = new IndexTemplateOutputPOJO();
         templateOutput.setPriority(outputSettings.getOrder());
         List<String> indexPatterns = outputSettings.generateIndexPatternsForTemplate();
@@ -399,7 +404,7 @@ public class MappingGenerator {
         IndexOutputPOJO indexOutput = new IndexOutputPOJO();
         indexOutput.setSettings(indexSettings);
         indexOutput.setMappings(indexMapping);
-        String indexFileForTest = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getIndexName() + ".json";
+        String indexFileForTest = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getIndexName() + "-index.json";
         if (outputSettings.getAlias() != null && !outputSettings.getAlias().isEmpty()) {
             Map<String, Map<String, String>> alias = new HashMap<>();
             alias.put(outputSettings.getAlias(), new HashMap<>());
@@ -461,7 +466,6 @@ public class MappingGenerator {
         addToSchema("mappings", actualObj, schema);
     }
 
-    //TODO add float
     private void addToSchema(final String key,
                              final JsonNode jsonNode,
                              final Map<String, Object> schema) {

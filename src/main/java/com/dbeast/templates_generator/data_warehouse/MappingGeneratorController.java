@@ -202,11 +202,11 @@ public class MappingGeneratorController {
         switch (fileType) {
             case "template": {
 //                fileName = projectsMap.get(projectId).getOutputSettings().getTemplateProperties().getTemplateName() + ".json";
-                fileName = EAppSettings.ANALYZER_ALL_LOGS_FILE.getConfigurationParameter();
+                fileName = EAppSettings.ANALYZER_TEMPLATE_ZIP_FILE.getConfigurationParameter();
                 break;
             }
             case "index": {
-                fileName = projectsMap.get(projectId).getOutputSettings().getIndexProperties().getIndexName() + ".json";
+                fileName = projectsMap.get(projectId).getOutputSettings().getIndexProperties().getIndexName() + "-index.json";
                 break;
             }
             case "change_log": {

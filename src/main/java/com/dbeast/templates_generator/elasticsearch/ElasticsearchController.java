@@ -188,6 +188,26 @@ public class ElasticsearchController {
                                                          final String projectId) {
         return getTemplateOrIndexList(connectionSettings, "/_cat/templates?h=name&format=json", projectId);
     }
+    public Set<String> getLegacyTemplateList(final EsSettingsPOJO connectionSettings,
+                                             final String projectId) {
+//        return getTemplateOrIndexList(connectionSettings, "/_cat/templates?h=name&format=json", projectId);
+        Response response;
+        try {
+            RestClient client = elasticsearchClient.getLowLevelClient(connectionSettings, projectId);
+            response = client.performRequest(new Request("GET", "_template?filter_path=*.order"));
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // parse the JSON response
+                String rawBody = EntityUtils.toString(response.getEntity());
+                TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
+                };
+                HashMap<String, Object> templatesList = mapper.readValue(rawBody, typeRef);
+                return templatesList.keySet();
+            }
+        } catch (IOException | ClusterConnectionException e) {
+            logger.error(e.getMessage());
+        }
+        return new HashSet<>();
+    }
 
     //TODO add catch exception
     private List<HashMap<String, String>> getTemplateOrIndexList(final EsSettingsPOJO connectionSettings,
