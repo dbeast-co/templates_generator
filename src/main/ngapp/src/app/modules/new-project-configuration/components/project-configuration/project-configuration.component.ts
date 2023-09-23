@@ -184,7 +184,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
 
   checkGenerateTemplateAndGenerateIndex(): void {
     if (
-      this.newProjectForm.get('actions').get('is_generate_template').value ===
+      this.newProjectForm.get('actions').get('is_generate_index_template').value ===
       false
     ) {
       this.disableControls(this.template_properties);
@@ -909,7 +909,6 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
     event: MatCheckboxChange,
     generateTemplate: number
   ): void {
-    debugger
     switch (generateTemplate) {
       case 0:
         if (!event.checked) {
