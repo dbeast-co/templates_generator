@@ -14,7 +14,7 @@ import {Observable, ReplaySubject} from 'rxjs';
 import {ProjectConfigurationModel} from '../../../../models/project-configuration.model';
 import {NewProjectConfigurationStore} from '../store/new-project-configuration-store';
 import {FormService} from '../../services/form.service';
-import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormControl, FormGroup, FormGroupName, Validators} from '@angular/forms';
 import {MatCheckboxChange} from '@angular/material/checkbox';
 import {SubSink} from 'subsink';
 import {ApiService} from '../../../../shared/api.service';
@@ -92,7 +92,6 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
           .pipe(takeUntil(this.destroyed$))
           .subscribe((data) => {
             this.project = data;
-            console.log(this.project);
             this.checkIsInActiveProcess(this.project);
             this.newProjectForm = this.formService.getProjectConfigurationForm(
               this.project
@@ -470,6 +469,16 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
       ?.get('template_properties')
       ?.get('index_settings')
       ?.get('refresh_interval');
+  }
+  get isGenerateDedicatedComponentsTemplate():FormGroup | undefined {
+    return this.newProjectForm
+      ?.get('actions')
+      ?.get('is_generate_dedicated_components_template') as FormGroup;
+  }
+  get isSeparateMappingsAndSettings(): AbstractControl | undefined {
+    return this.newProjectForm
+      ?.get('actions')
+      ?.get('is_separate_mappings_and_settings');
   }
 
   //endregion
@@ -900,10 +909,14 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
     event: MatCheckboxChange,
     generateTemplate: number
   ): void {
+    debugger
     switch (generateTemplate) {
       case 0:
         if (!event.checked) {
           this.disableControls(this.template_properties);
+          // this.disableControls(this.isGenerateDedicatedComponentsTemplate);
+          // this.disableControls(this.isSeparateMappingsAndSettings);
+          // TODO: is_generate_dedicated_components_template,is_separate_mappings_and_settings
           this.clearValidators(this.template_nameForTemplate);
           this.clearValidators(this.index_patternsForTemplate);
           this.cdr.markForCheck();
