@@ -18,7 +18,7 @@ public class LegacyTemplateOutputPOJO {
     @JsonProperty("mappings")
     private Map<String, Object> mappings;
     @JsonProperty("aliases")
-    private Map<String, Map<String, String>> aliases= new HashMap<>();
+    private Map<String, Object> aliases= new HashMap<>();
 
     public int getOrder() {
         return order;
@@ -56,11 +56,11 @@ public class LegacyTemplateOutputPOJO {
         this.settings = settings.settingsAsMap(this.settings);
     }
 
-    public Map<String, Map<String, String>> getAliases() {
+    public Map<String, Object> getAliases() {
         return aliases;
     }
 
-    public void setAliases(Map<String, Map<String, String>> aliases) {
+    public void setAliases(Map<String, Object> aliases) {
         this.aliases = aliases;
     }
 }
