@@ -24,7 +24,10 @@ import { CustomSpinnerDirective } from './directives/custom-spinner.directive';
     ReactiveFormsModule,
     FormsModule,
   ],
-  exports: [],
+  exports: [
+    DisableEnterDirective,
+    CustomSpinnerDirective
+  ],
   providers: [FormBuilder, FormService],
 })
 export class NewProjectConfigurationModule {}

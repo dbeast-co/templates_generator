@@ -4,14 +4,18 @@ import {
   IExistingTemplateActions,
   ProjectConfigurationModel,
 } from '../../../models/project-configuration.model';
+import {BehaviorSubject} from 'rxjs';
 
 @Injectable()
 export class FormService {
   private projectConfigurationForm: FormGroup;
 
+
+
   constructor(private fb: FormBuilder) {
     this.projectConfigurationForm = this.fb.group({});
   }
+
 
   getProjectConfigurationForm(project: ProjectConfigurationModel): FormGroup {
     console.log(project);

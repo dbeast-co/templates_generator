@@ -10,6 +10,10 @@ const routes: Routes = [
   {
     path: 'project_configuration',
     loadChildren: () => import('./modules/new-project-configuration/new-project-configuration.module').then((m) => m.NewProjectConfigurationModule),
+  },
+  {
+    path: 'legacy-templates-converter',
+    loadChildren: () => import('./modules/legacy-templates-converter/legacy-templates-converter.module').then((m) => m.LegacyTemplatesConverterModule),
   }
 ];
 

@@ -9,6 +9,9 @@ import {
 import { ISavedProject } from '../models/i-saved-project';
 import { IProjectMonitoring } from '../models/project-monitoring';
 import { AnalyzeResponseModel } from '../models/analyze-response.model';
+import {FormGroup} from '@angular/forms';
+import {LegacyTemplate} from '../models/legacy-template';
+
 
 @Injectable({
   providedIn: 'root',
@@ -134,4 +137,14 @@ export class ApiService {
       formData
     );
   }
+  testTemplatesConverter(project_id: string,form: any): Observable<Object> {
+    return this.http.post(`${environment.serverApi}/templates_converter/test_cluster/${project_id}`,form)
+
+  }
+  getLegacyTemplates(form: FormGroup): Observable<LegacyTemplate> {
+    return this.http.post<LegacyTemplate>(`${environment.serverApi}/templates_converter/get_templates`,form.value)
+
+  }
+
+
 }
