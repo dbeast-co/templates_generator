@@ -1,0 +1,55 @@
+<div class="index_pattern-table">
+  <table #table [dataSource]="sourceIndexListMatSource" class="mat-elevation-z8"
+         id="sourceIndexListMatSource"
+         mat-table>
+    <ng-container matColumnDef="checkboxIndexPattern">
+      <th *matHeaderCellDef mat-header-cell>
+        <mat-checkbox #mainCheckboxForIndexList (change)="masterToggleIndexList($event)"
+                      *ngIf="showViewButtonInTables && !isOnFilter || true"
+                      [checked]="selectionIndexList.hasValue() && isAllSelectedIndexList()"
+                      [indeterminate]="selectionIndexList.hasValue() && !isAllSelectedIndexList()">
+        </mat-checkbox>
+        <mat-checkbox (change)="onSelectAllAfterFilter($event)" *ngIf="isOnFilter"
+                      [checked]="selectionIndexList.hasValue() && isAllSelectedIndexList()"
+                      [indeterminate]="selectionIndexList.hasValue() && !isAllSelectedIndexList()"
+        >
+
+        </mat-checkbox>
+      </th>
+      <td *matCellDef="let element;let i=index" mat-cell>
+        <mat-checkbox
+          (change)="checkRowOfSourceIndexTable($event,element) ? selectionIndexList.toggle(element) : null"
+          (click)="$event.stopPropagation()"
+          *ngIf="showViewButtonInTables || true"
+          [checked]="element.is_checked">
+        </mat-checkbox>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="index_name">
+      <th *matHeaderCellDef mat-header-cell> Template name</th>
+      <td *matCellDef="let element" mat-cell>
+                  <span style="white-space: break-spaces;
+    overflow-wrap: anywhere;">{{element.template_name}}</span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="viewIndexPattern">
+      <th *matHeaderCellDef mat-header-cell></th>
+      <td *matCellDef="let element" mat-cell>
+        <button *ngIf="showViewButtonInTables"
+                class="view_btn"
+                mat-raised-button>
+          <img matTooltip="Edit"
+               src="././assets/icons/visibility-24px.svg">
+        </button>
+      </td>
+    </ng-container>
+    <tr *matHeaderRowDef="displayedColumnsForIndexPatternNamesTable" mat-header-row></tr>
+    <tr *matRowDef="let row; columns: displayedColumnsForIndexPatternNamesTable;" mat-row></tr>
+  </table>
+</div>
+
+
+
+
+
