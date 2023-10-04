@@ -1,9 +1,9 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { ProjectFormService } from '../../services/project-form.service';
-import { ApiService } from '../../../../shared/api.service';
-import { ToastrService } from 'ngx-toastr';
-import { DownloadService } from '../../../../shared/download.service';
+import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {FormGroup} from '@angular/forms';
+import {ProjectFormService} from '../../services/project-form.service';
+import {ApiService} from '../../../../shared/api.service';
+import {ToastrService} from 'ngx-toastr';
+import {DownloadService} from '../../../../shared/download.service';
 
 @Component({
   selector: 'app-generate-settings',
@@ -21,7 +21,8 @@ export class GenerateSettingsComponent implements OnInit {
     private apiService: ApiService,
     private toastrService: ToastrService,
     private downloadService: DownloadService
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.projectForm = this.projectFormService.projectForm;
@@ -34,13 +35,25 @@ export class GenerateSettingsComponent implements OnInit {
         console.group('%c SUCCESS', 'color:#84B59F');
         console.log('SUCCESS');
         console.groupEnd();
-        this.downloadService.saveFileZip(res);
         this.isLoadingEmit.emit(false);
         this.toastrService.success('', 'Converted  successfully');
       },
       (error) => {
         this.isLoadingEmit.emit(false);
         this.toastrService.error('', 'Something  went wrong!!!');
+      }
+    );
+  }
+
+  onDownloadTemplate(): void {
+    this.apiService.downloadIndexTemplate(this.projectForm.get('project_id').value).subscribe(
+      (res) => {
+        console.group('%c SUCCESS', 'color:#84B59F');
+        console.log('SUCCESS');
+        console.groupEnd();
+        this.downloadService.saveFileZip(res);
+      },
+      (error) => {
       }
     );
   }

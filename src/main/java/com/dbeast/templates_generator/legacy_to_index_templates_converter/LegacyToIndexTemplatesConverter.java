@@ -1,6 +1,7 @@
 package com.dbeast.templates_generator.legacy_to_index_templates_converter;
 
 import com.dbeast.templates_generator.TemplatesGenerator;
+import com.dbeast.templates_generator.constants.EAppSettings;
 import com.dbeast.templates_generator.data_warehouse.MappingGeneratorController;
 import com.dbeast.templates_generator.elasticsearch.ElasticsearchController;
 import com.dbeast.templates_generator.exceptions.ClusterConnectionException;
@@ -105,7 +106,7 @@ public class LegacyToIndexTemplatesConverter {
         }
         try {
             GeneralUtils.zipDirectory(TemplatesGenerator.projectsFolder + projectId,
-                    TemplatesGenerator.projectsFolder + projectId + "/" + "templates.zip");
+                    TemplatesGenerator.projectsFolder + projectId + "/" + EAppSettings.ANALYZER_TEMPLATE_ZIP_FILE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -131,11 +132,12 @@ public class LegacyToIndexTemplatesConverter {
                         throw new RuntimeException(e);
                     }
                 });
-        try {
-            getFile(response, project.getProjectId());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+
+//            getFile(response, project.getProjectId());
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         return response;
     }
 

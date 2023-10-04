@@ -107,6 +107,7 @@ export class ApiService {
     );
   }
 
+
   validateProjectName(project_name): Observable<boolean> {
     return this.http.get<boolean>(
       `${environment.serverApi}/index_analyzer/project_settings/validate/${project_name}`
@@ -150,10 +151,16 @@ export class ApiService {
     );
   }
 
-  runTemplatesConverter(form: FormGroup): Observable<HttpResponse<Blob>> {
+  runTemplatesConverter(form: FormGroup): Observable<any> {
     return this.http.post(
       `${environment.serverApi}/templates_converter/run`,
-      form.value,
+      form.value
+    );
+  }
+
+  downloadIndexTemplate(project_id): Observable<HttpResponse<Blob>> {
+    return this.http.get(
+      `${environment.serverApi}/templates_converter/download/${project_id}`,
       {
         responseType: 'blob',
         observe: 'response',

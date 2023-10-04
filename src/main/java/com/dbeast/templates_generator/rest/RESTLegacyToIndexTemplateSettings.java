@@ -34,8 +34,8 @@ public class RESTLegacyToIndexTemplateSettings extends ARest {
                 logger.info("Got request for transform templates");
                 try {
                     response = legacyToIndexTemplatesConverter.runProject(response, project);
-                    setCorsHeaders(response);
-                    return response;
+//                    setCorsHeaders(response);
+                    return true;
                 } catch (Exception e) {
                     response.status(406);
                     return e.getMessage();
@@ -63,6 +63,13 @@ public class RESTLegacyToIndexTemplateSettings extends ARest {
                 TemplateConverterSettingsPOJO project = mapper.readValue(request.body(), TemplateConverterSettingsPOJO.class);
                 legacyToIndexTemplatesConverter.getTemplatesList(project);
                 return objectToString(project);
+            });
+
+
+            get("/download/:id", (request, response) -> {
+                logger.info("Got request for download all files file!");
+                setCorsHeaders(response);
+                return mappingGeneratorController.getFile(response, request.params(":id"), "template");
             });
 //            post("/ssl_cert/:usage/:projectId", (request, response) -> {
 //                logger.info("Got request for upload SSL certificate for project with id: " + request.params(":projectId"));
