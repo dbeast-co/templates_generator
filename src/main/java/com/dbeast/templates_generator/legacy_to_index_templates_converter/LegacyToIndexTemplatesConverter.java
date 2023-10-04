@@ -5,7 +5,9 @@ import com.dbeast.templates_generator.data_warehouse.MappingGeneratorController;
 import com.dbeast.templates_generator.elasticsearch.ElasticsearchController;
 import com.dbeast.templates_generator.exceptions.ClusterConnectionException;
 import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.ComponentTemplateOutputPOJO;
+import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.IndexTemplateOutputPOJO;
 import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.TemplateOutputPOJO;
+import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_settings.TemplatePropertiesPOJO;
 import com.dbeast.templates_generator.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,7 +25,6 @@ import java.util.stream.Collectors;
 
 public class LegacyToIndexTemplatesConverter {
     private static final LegacyToIndexTemplatesConverter _instance = new LegacyToIndexTemplatesConverter();
-    private final MappingGeneratorController mappingGeneratorController = MappingGeneratorController.getInstance();
 
 
     public static LegacyToIndexTemplatesConverter getInstance() {
@@ -42,20 +43,20 @@ public class LegacyToIndexTemplatesConverter {
                                            final String projectId) throws JsonProcessingException {
         boolean generationResult = true;
         ObjectMapper jsonMapper = new ObjectMapper();
-        JsonNode jsonTemplate = jsonMapper.readTree(legacyTemplate);
-        Map<String, Map<String, Object>> mapTemplate = jsonMapper.convertValue(jsonTemplate, new TypeReference<Map<String, Map<String, Object>>>() {
+        Map<String, Map<String, Object>> jsonTemplate = jsonMapper.readValue(legacyTemplate, new TypeReference<Map<String, Map<String, Object>>>() {
         });
-        String templateName = mapTemplate.keySet().stream().findFirst().orElse(null);
-        Map<String, Object> template = mapTemplate.get(templateName);
-        Map<String, Map<String, Object>> settings = jsonMapper.convertValue(mapTemplate.get("settings"), new TypeReference<Map<String, Map<String, Object>>>() {});
-        Map<String, Object> mappings = jsonMapper.convertValue(template.get("mappings"), new TypeReference<Map<String, Object>>() {});
-        Map<String, Object> alias = jsonMapper.convertValue(template.get("alias"), new TypeReference<Map<String, Object>>() {});
-System.out.println("");
-//
+        String templateName = jsonTemplate.keySet().stream().findFirst().orElse(null);
+        Map<String, Object> template = jsonTemplate.get(templateName);
+        Map<String, Map<String, Object>> settings = jsonMapper.convertValue(template.get("settings"), new TypeReference<Map<String, Map<String, Object>>>() {
+        });
+        Map<String, Object> mappings = jsonMapper.convertValue(template.get("mappings"), new TypeReference<Map<String, Object>>() {
+        });
+        Map<String, Object> aliases = jsonMapper.convertValue(template.get("aliases"), new TypeReference<Map<String, Object>>() {
+        });
+        List<String> indexPatterns = (List<String>) template.get("index_patterns");
+        int order = (int) template.get("order");
         List<String> componentsList = new LinkedList<>();
-//        ObjectMapper jsonMapper = new ObjectMapper();
-//        Map<String, Map<String, Object>> mapSettings = jsonMapper.readValue(legacyTemplate.settings().toString(), new TypeReference<Map<String, Map<String, Object>>>() {
-//        });
+
         if (generateDedicatedComponentsTemplate) {
             if (separateMappingsAndSettings) {
                 generationResult = generationResult && generateComponentTemplate(
@@ -73,8 +74,7 @@ System.out.println("");
                         "-settings-component");
                 componentsList.add(templateName + "-mapping-component");
                 componentsList.add(templateName + "-settings-component");
-            }
-            else {
+            } else {
                 // Generate all in one component
                 generationResult = generationResult && generateComponentTemplate(
                         templateName,
@@ -84,27 +84,35 @@ System.out.println("");
                         "-component");
                 componentsList.add(templateName + "-component");
             }
-//            generationResult = generationResult && generateIndexTemplate(
-//                    project.getOutputSettings().getTemplateProperties(),
-//                    projectId,
-//                    new HashMap<>(),
-//                    new HashMap<>(),
-//                    componentsList,
-//                    alias);
+            generationResult = generationResult && generateIndexTemplate(
+                    templateName,
+                    order,
+                    projectId,
+                    indexPatterns,
+                    new HashMap<>(),
+                    new HashMap<>(),
+                    componentsList,
+                    aliases);
+        } else {
+            generateIndexTemplate(templateName,
+                    order,
+                    projectId,
+                    indexPatterns,
+                    mappings,
+                    settings,
+                    new LinkedList<>(),
+                    aliases);
         }
-//        legacyTemplate.mappings();
-//        legacyTemplate.settings();
-//        legacyTemplate.aliases();
-
-        String templateFile = TemplatesGenerator.projectsFolder + projectId + "/" + templateName + "-index-template.json";
-//        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
-//                generateIndexTemplateAPIRequest(outputSettings.getTemplateName()),
-//                templateOutput);
-
+        try {
+            GeneralUtils.zipDirectory(TemplatesGenerator.projectsFolder + projectId,
+                    TemplatesGenerator.projectsFolder + projectId + "/" + "templates.zip");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Response runProject(Response response,
-                               TemplateConverterSettingsPOJO project) {
+                               TemplateConverterSettingsPOJO project){
         GeneralUtils.createFolderIfNotExists(TemplatesGenerator.projectsFolder + project.getProjectId());
         project.getLegacyTemplatesList().stream()
                 .filter(TemplateFromListPOJO::isIs_checked)
@@ -115,20 +123,19 @@ System.out.println("");
                                 project.getConnectionSettings(),
                                 template.getTemplateName(),
                                 project.getProjectId());
-                    } catch (ClusterConnectionException e) {
-                        throw new RuntimeException(e);
-                    }
-                    try {
                         convertToComponentTemplate(legacyTemplate,
                                 project.isGenerateDedicatedComponentsTemplate(),
                                 project.isSeparateMappingsAndSettings(),
                                 project.getProjectId());
-                    } catch (JsonProcessingException e) {
+                    } catch (JsonProcessingException | ClusterConnectionException e) {
                         throw new RuntimeException(e);
                     }
                 });
-        //zip folder
-//        getFile(response, project.getProjectId());
+        try {
+            getFile(response, project.getProjectId());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return response;
     }
 
@@ -163,34 +170,33 @@ System.out.println("");
         project.setLegacyTemplatesList(templateList);
     }
 
-//    private boolean generateIndexTemplate(final TemplatePropertiesPOJO outputSettings,
-//                                          final String projectId,
-//                                          final int order,
-//                                          final List<String> indexPatterns,
-//                                          final Map<String, Object> templateMapping,
-//                                          final Map<String, Map<String, Object>> indexSettings,
-//                                          final List<String> componentsList,
-//                                          final Map<String, Map<String, String>> alias) {
-//        IndexTemplateOutputPOJO templateOutput = new IndexTemplateOutputPOJO();
-//        templateOutput.setPriority(outputSettings.getOrder());
-//        List<String> indexPatterns = outputSettings.generateIndexPatternsForTemplate();
-//        templateOutput.setIndexPatterns(indexPatterns);
-//        TemplateOutputPOJO template = new TemplateOutputPOJO();
-//        if (indexSettings.size() > 0) {
-//            template.setSettings(indexSettings);
-//        }
-//        if (templateMapping.size() > 0) {
-//            template.setMappings(templateMapping);
-//        }
-//        template.setAliases(alias);
-//        templateOutput.setTemplate(template);
-//        templateOutput.setComposed_of(componentsList);
-//
-//        String templateFile = TemplatesGenerator.projectsFolder + projectId + "/" + outputSettings.getTemplateName() + "-index-template.json";
-//        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
-//                generateIndexTemplateAPIRequest(outputSettings.getTemplateName()),
-//                templateOutput);
-//    }
+    private boolean generateIndexTemplate(final String templateName,
+                                          final int order,
+                                          final String projectId,
+                                          final List<String> indexPatterns,
+                                          final Map<String, Object> templateMapping,
+                                          final Map<String, Map<String, Object>> indexSettings,
+                                          final List<String> componentsList,
+                                          final Map<String, Object> aliases) {
+        IndexTemplateOutputPOJO templateOutput = new IndexTemplateOutputPOJO();
+        templateOutput.setPriority(order);
+        templateOutput.setIndexPatterns(indexPatterns);
+        TemplateOutputPOJO template = new TemplateOutputPOJO();
+        if (indexSettings.size() > 0) {
+            template.setSettings(indexSettings);
+        }
+        if (templateMapping.size() > 0) {
+            template.setMappings(templateMapping);
+        }
+        template.setAliases(aliases);
+        templateOutput.setTemplate(template);
+        templateOutput.setComposed_of(componentsList);
+
+        String templateFile = TemplatesGenerator.projectsFolder + projectId + "/" + templateName + "-index-template.json";
+        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
+                generateIndexTemplateAPIRequest(templateName),
+                templateOutput);
+    }
 
     private boolean generateComponentTemplate(final String templateName,
                                               final String projectId,
@@ -210,7 +216,7 @@ System.out.println("");
         return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
                 generateComponentTemplateAPIRequest(templateName + fileNameSuffix),
                 templateOutput);
-        }
+    }
 
 
     private String generateComponentTemplateAPIRequest(final String templateName) {

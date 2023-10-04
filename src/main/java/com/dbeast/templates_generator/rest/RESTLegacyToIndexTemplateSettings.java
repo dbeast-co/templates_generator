@@ -33,7 +33,9 @@ public class RESTLegacyToIndexTemplateSettings extends ARest {
                 TemplateConverterSettingsPOJO project = mapper.readValue(request.body(), TemplateConverterSettingsPOJO.class);
                 logger.info("Got request for transform templates");
                 try {
-                    return legacyToIndexTemplatesConverter.runProject(response, project);
+                    response = legacyToIndexTemplatesConverter.runProject(response, project);
+                    setCorsHeaders(response);
+                    return response;
                 } catch (Exception e) {
                     response.status(406);
                     return e.getMessage();

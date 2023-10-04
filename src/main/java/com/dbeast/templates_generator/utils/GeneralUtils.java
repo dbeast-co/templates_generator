@@ -196,15 +196,14 @@ public class GeneralUtils {
         return resultList;
     }
 
-    public static void zipFiles(final String folderPath) throws IOException {
+    public static void zipFiles(final String folderPath, final String zipFileName) {
         final Path sourceFolder = Paths.get(folderPath);
         try {
             Files.walk(sourceFolder)
                     .filter(Files::isRegularFile)
-                    .filter(file -> !file.getFileName().toString().equals(EAppSettings.PROJECT_SETTINGS_FILE.getConfigurationParameter()))
                     .forEach(innerPath -> {
                         try {
-                            zipFile(innerPath, folderPath + "/" + "all.zip");
+                            zipFile(innerPath, folderPath + "/" + zipFileName);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -228,7 +227,6 @@ public class GeneralUtils {
 
             Files.walk(sourceDirPath)
                     .filter(path -> !Files.isDirectory(path))
-                    .filter(path -> !path.toString().equals(zipFilePath.toString()))
                     .filter(path -> !path.toString().endsWith(".zip"))
                     .filter(path -> !path.toString().endsWith(EAppSettings.PROJECT_SETTINGS_FILE.getConfigurationParameter()))
                     .forEach(path -> {
