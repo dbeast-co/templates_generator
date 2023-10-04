@@ -11,7 +11,7 @@ public class ActionsPOJO implements Cloneable{
     @JsonProperty("is_generate_legacy_template")
     private boolean isGenerateLegacyTemplate = false;
     @JsonProperty("is_generate_dedicated_components_template")
-    private boolean isGenerateDedicatedComponentsTemplate = false;
+    private boolean isGenerateDedicatedComponentsTemplate = true;
 
     @JsonProperty("is_separate_mappings_and_settings")
     private boolean isSeparateMappingsAndSettings = true;

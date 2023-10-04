@@ -3,8 +3,6 @@ package com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 public class TemplateOutputPOJO {
@@ -13,7 +11,7 @@ public class TemplateOutputPOJO {
     @JsonProperty("mappings")
     private Map<String, Object> mappings = new HashMap<>();
     @JsonProperty("aliases")
-    private Map<String, Map<String, String>> aliases= new HashMap<>();
+    private Map<String, Object> aliases= new HashMap<>();
 
 
     public Map<String, Object> getMappings() {
@@ -36,11 +34,11 @@ public class TemplateOutputPOJO {
         this.settings = settings.settingsAsMap(this.settings);
     }
 
-    public Map<String, Map<String, String>> getAliases() {
+    public Map<String, Object> getAliases() {
         return aliases;
     }
 
-    public void setAliases(Map<String, Map<String, String>> aliases) {
+    public void setAliases(Map<String, Object> aliases) {
         this.aliases = aliases;
     }
 }

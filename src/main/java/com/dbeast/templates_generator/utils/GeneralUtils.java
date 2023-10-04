@@ -196,15 +196,14 @@ public class GeneralUtils {
         return resultList;
     }
 
-    public static void zipFiles(final String folderPath) throws IOException {
+    public static void zipFiles(final String folderPath, final String zipFileName) {
         final Path sourceFolder = Paths.get(folderPath);
         try {
             Files.walk(sourceFolder)
                     .filter(Files::isRegularFile)
-                    .filter(file -> !file.getFileName().toString().equals(EAppSettings.PROJECT_SETTINGS_FILE.getConfigurationParameter()))
                     .forEach(innerPath -> {
                         try {
-                            zipFile(innerPath, folderPath + "/" + "all.zip");
+                            zipFile(innerPath, folderPath + "/" + zipFileName);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -228,8 +227,37 @@ public class GeneralUtils {
 
             Files.walk(sourceDirPath)
                     .filter(path -> !Files.isDirectory(path))
-                    .filter(path -> !path.toString().equals(zipFilePath.toString()))
+                    .filter(path -> !path.toString().endsWith(".zip"))
                     .filter(path -> !path.toString().endsWith(EAppSettings.PROJECT_SETTINGS_FILE.getConfigurationParameter()))
+                    .forEach(path -> {
+                        ZipEntry zipEntry = new ZipEntry(sourceDirPath.relativize(path).toString());
+                        try {
+                            zipOutputStream.putNextEntry(zipEntry);
+                            zipOutputStream.write(Files.readAllBytes(path));
+                            zipOutputStream.closeEntry();
+                        } catch (Exception e) {
+                            System.err.println(e);
+                        }
+                    });
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public static boolean zipTemplatesDirectory(String sourceDirectoryPath, String zipPath) throws IOException {
+        Files.deleteIfExists(Paths.get(zipPath));
+        Path zipFilePath = Files.createFile(Paths.get(zipPath));
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(zipFilePath))) {
+            Path sourceDirPath = Paths.get(sourceDirectoryPath);
+
+            Files.walk(sourceDirPath)
+                    .filter(path -> !Files.isDirectory(path))
+                    .filter(path -> !path.toString().equals(zipFilePath.toString()))
+                    .filter(path -> !path.toString().endsWith("-index.json"))
+                    .filter(path -> !path.toString().endsWith(".zip"))
+                    .filter(path -> !path.toString().endsWith(EAppSettings.PROJECT_SETTINGS_FILE.getConfigurationParameter()))
+                    .filter(path -> !path.toString().endsWith(EAppSettings.ANALYZER_CHANGELOG_FILE.getConfigurationParameter()))
                     .forEach(path -> {
                         ZipEntry zipEntry = new ZipEntry(sourceDirPath.relativize(path).toString());
                         try {
