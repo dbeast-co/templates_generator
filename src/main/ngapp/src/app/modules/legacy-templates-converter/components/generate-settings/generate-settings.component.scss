@@ -8,6 +8,11 @@
   justify-content: space-between;
   align-items: center;
   margin-block-end: 24px;
+  max-width: 72%;
+
+  img {
+    margin-inline-start: 5px;
+  }
 
 }
 
