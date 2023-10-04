@@ -150,10 +150,14 @@ export class ApiService {
     );
   }
 
-  runTemplatesConverter(form: FormGroup) {
+  runTemplatesConverter(form: FormGroup): Observable<HttpResponse<Blob>> {
     return this.http.post(
       `${environment.serverApi}/templates_converter/run`,
-      form.value
+      form.value,
+      {
+        responseType: 'blob',
+        observe: 'response',
+      }
     );
   }
 }

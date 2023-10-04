@@ -296,12 +296,13 @@
             flex-direction: column;
             position: relative;
 
-            mat-error.existing_template_actions{
+            mat-error.existing_template_actions {
               position: absolute;
               top: 53px;
               left: 28px;
             }
-            mat-error.existing_template_actions_index{
+
+            mat-error.existing_template_actions_index {
               position: absolute;
               top: 53px;
               left: 28px;
@@ -331,12 +332,12 @@
           //flex-wrap: wrap;
           //max-width: 80%;
           display: grid;
-          grid-template-columns: repeat(2,1fr);
+          grid-template-columns: repeat(2, 1fr);
           margin-top: 1rem;
           grid-gap: 0.4rem;
 
-          mat-checkbox{
-            &:last-child{
+          mat-checkbox {
+            &:last-child {
               //justify-self: flex-end;
               //transform: translateX(105px);
             }
