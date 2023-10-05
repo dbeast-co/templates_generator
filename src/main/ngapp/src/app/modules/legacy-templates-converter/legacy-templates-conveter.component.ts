@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { HeaderService } from '../../shared/header.service';
 
 @Component({
   selector: 'app-legacy-templates-conveter',
@@ -9,7 +10,9 @@ import { BehaviorSubject } from 'rxjs';
 export class LegacyTemplatesConveterComponent implements OnInit {
   isLoading: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
-  constructor() {}
+  constructor(private headerService: HeaderService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.headerService.setHeaderTitle('Legacy templates converter');
+  }
 }
