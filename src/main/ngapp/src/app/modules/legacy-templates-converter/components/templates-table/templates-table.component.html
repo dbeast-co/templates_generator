@@ -1,52 +1,58 @@
-<div class="index_pattern-table">
-  <table #table [dataSource]="sourceIndexListMatSource" class="mat-elevation-z8"
-         id="sourceIndexListMatSource"
-         mat-table>
-    <ng-container matColumnDef="checkboxIndexPattern">
-      <th *matHeaderCellDef mat-header-cell>
-        <mat-checkbox #mainCheckboxForIndexList (change)="masterToggleIndexList($event)"
-                      *ngIf="showViewButtonInTables && !isOnFilter || true"
-                      [checked]="selectionIndexList.hasValue() && isAllSelectedIndexList()"
-                      [indeterminate]="selectionIndexList.hasValue() && !isAllSelectedIndexList()">
-        </mat-checkbox>
-        <mat-checkbox (change)="onSelectAllAfterFilter($event)" *ngIf="isOnFilter"
-                      [checked]="selectionIndexList.hasValue() && isAllSelectedIndexList()"
-                      [indeterminate]="selectionIndexList.hasValue() && !isAllSelectedIndexList()"
-        >
+<div class="container">
+  <div class="filter">
+    <mat-form-field [floatLabel]="'never'">
+      <input (keyup)="applyFilterForSourceIndexTable($event)" [(ngModel)]="filterTableValue"
+             [ngModelOptions]="{'standalone': true}"
+             matInput placeholder="Search index name..." type="text"
+             ylDisableEnter>
+    </mat-form-field>
+  </div>
 
-        </mat-checkbox>
-      </th>
-      <td *matCellDef="let element;let i=index" mat-cell>
-        <mat-checkbox
-          (change)="checkRowOfSourceIndexTable($event,element) ? selectionIndexList.toggle(element) : null"
-          (click)="$event.stopPropagation()"
-          *ngIf="showViewButtonInTables || true"
-          [checked]="element.is_checked">
-        </mat-checkbox>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="index_name">
-      <th *matHeaderCellDef mat-header-cell> Template name</th>
-      <td *matCellDef="let element" mat-cell>
+  <div class="index_pattern-table">
+    <table #table [dataSource]="sourceIndexListMatSource" class="mat-elevation-z8"
+           id="sourceIndexListMatSource"
+           mat-table>
+      <ng-container matColumnDef="checkboxIndexPattern">
+        <th *matHeaderCellDef mat-header-cell>
+          <mat-checkbox #mainCheckboxForIndexList (change)="masterToggleIndexList($event)"
+                        *ngIf="originalSourceIndex.length > 0"
+                        [checked]="selectionIndexList.hasValue() && isAllSelectedIndexList() || selectionIndexList.selected.length === originalSourceIndex.length"
+          >
+          </mat-checkbox>
+
+        </th>
+        <td *matCellDef="let element;let i=index" mat-cell>
+          <mat-checkbox
+            (change)="checkRowOfSourceIndexTable($event,element)"
+            (click)="$event.stopPropagation()"
+            *ngIf="element.template_name !== ''"
+            [checked]="element.is_checked">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="index_name">
+        <th *matHeaderCellDef mat-header-cell> Template name</th>
+        <td *matCellDef="let element" mat-cell>
                   <span style="white-space: break-spaces;
     overflow-wrap: anywhere;">{{element.template_name}}</span>
-      </td>
-    </ng-container>
+        </td>
+      </ng-container>
 
-    <ng-container matColumnDef="viewIndexPattern">
-      <th *matHeaderCellDef mat-header-cell></th>
-      <td *matCellDef="let element" mat-cell>
-        <button *ngIf="showViewButtonInTables"
-                class="view_btn"
-                mat-raised-button>
-          <img matTooltip="Edit"
-               src="././assets/icons/visibility-24px.svg">
-        </button>
-      </td>
-    </ng-container>
-    <tr *matHeaderRowDef="displayedColumnsForIndexPatternNamesTable" mat-header-row></tr>
-    <tr *matRowDef="let row; columns: displayedColumnsForIndexPatternNamesTable;" mat-row></tr>
-  </table>
+      <ng-container matColumnDef="viewIndexPattern">
+        <th *matHeaderCellDef mat-header-cell></th>
+        <td *matCellDef="let element" mat-cell>
+          <button *ngIf="showViewButtonInTables"
+                  class="view_btn"
+                  mat-raised-button>
+            <img matTooltip="Edit"
+                 src="././assets/icons/visibility-24px.svg">
+          </button>
+        </td>
+      </ng-container>
+      <tr *matHeaderRowDef="displayedColumnsForIndexPatternNamesTable" mat-header-row></tr>
+      <tr *matRowDef="let row; columns: displayedColumnsForIndexPatternNamesTable;" mat-row></tr>
+    </table>
+  </div>
 </div>
 
 

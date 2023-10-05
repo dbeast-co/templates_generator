@@ -49,7 +49,9 @@ export class TemplatesTableComponent implements OnInit {
   destinationClusterStatus: ElementRef;
   @ViewChild(MatSort) sort: MatSort;
   isOnLoading: boolean = false;
-  legacy_templates_list: FormArray;
+  legacy_templates_list: FormArray = new FormArray([]);
+  filterTableValue: string = '';
+  originalSourceIndex: Array<ISourceIndexList> = [];
 
   constructor(
     private apiService: ApiService,
@@ -58,7 +60,7 @@ export class TemplatesTableComponent implements OnInit {
 
   ngOnInit() {
     this.projectForm = this.projectFormService.projectForm;
-    this.legacy_templates_list = this.projectFormService.legacy_templates_list;
+
     this.sourceIndexListMatSource = new MatTableDataSource<ISourceIndexList>(
       []
     );
@@ -80,21 +82,19 @@ export class TemplatesTableComponent implements OnInit {
       )
       .subscribe({
         next: (res) => {
-          if (res.legacy_templates_list.length > 0) {
-            // this.sourceIndexListMatSource =
-            //   new MatTableDataSource<ISourceIndexList>(
-            //     res.legacy_templates_list
-            //   );
-            this.sourceIndexListMatSource.data = res.legacy_templates_list;
-            for (let i = 0; i < this.maxEmptyRows; i++) {
-              this.sourceIndexListMatSource.data = [
-                ...this.sourceIndexListMatSource.data,
-                this.emptyRowForSourceIndexList,
-              ];
-            }
-            this.legacy_templates_list.patchValue(res.legacy_templates_list);
-          } else {
-            for (let i = 0; i < this.maxEmptyRows; i++) {
+          this.originalSourceIndex = res.legacy_templates_list;
+          this.sourceIndexListMatSource.data = [];
+          this.legacy_templates_list = res.legacy_templates_list;
+
+          for (let i = 0; i < this.maxEmptyRows; i++) {
+            this.sourceIndexListMatSource.data = [...res.legacy_templates_list];
+          }
+          if (res.legacy_templates_list.length <= this.maxEmptyRows) {
+            for (
+              let i = 0;
+              i < this.maxEmptyRows - res.legacy_templates_list.length;
+              i++
+            ) {
               this.sourceIndexListMatSource.data = [
                 ...this.sourceIndexListMatSource.data,
                 this.emptyRowForSourceIndexList,
@@ -127,31 +127,26 @@ export class TemplatesTableComponent implements OnInit {
   }
 
   masterToggleIndexList(event: MatCheckboxChange) {
-    if (this.isAllSelectedIndexList()) {
-      this.selectionIndexList.clear();
-    } else {
-      this.sourceIndexListMatSource.data.forEach((row) =>
-        this.selectionIndexList.select(row)
-      );
-    }
-    if (
-      this.selectionIndexList.selected.length ===
-      this.sourceIndexListMatSource.data.length
-    ) {
-      const selectedIndexList = this.selectionIndexList.selected.map((item) => {
-        item.is_checked = true;
-        return item;
+    if (event.checked) {
+      const allSelected = this.sourceIndexListMatSource.data.map((row) => {
+        row.is_checked = true;
+        return row;
       });
-      this.legacy_templates_list.patchValue(selectedIndexList);
-    }
-    if (this.selectionIndexList.selected.length === 0) {
-      const unSelectedIndexList = this.sourceIndexListMatSource.data.map(
-        (item) => {
-          item.is_checked = false;
-          return item;
-        }
+      this.selectionIndexList = new SelectionModel<ISourceIndexList>(
+        true,
+        allSelected
       );
-      this.legacy_templates_list.patchValue(unSelectedIndexList);
+      this.legacy_templates_list.patchValue(allSelected);
+    } else {
+      const allUnselected = this.sourceIndexListMatSource.data.map((row) => {
+        row.is_checked = false;
+        return row;
+      });
+      this.selectionIndexList = new SelectionModel<ISourceIndexList>(
+        true,
+        allUnselected
+      );
+      this.legacy_templates_list.patchValue(allUnselected);
     }
   }
 
@@ -160,6 +155,10 @@ export class TemplatesTableComponent implements OnInit {
       (a) => a.template_name === row.template_name
     );
     if (event.checked) {
+      this.legacy_templates_list =
+        this.projectFormService.legacy_templates_list;
+      this.selectionIndexList.selected.push(checkedRowIndex);
+      // this.legacy_templates_list.setValue([]);
       this.legacy_templates_list.push(
         new FormControl({
           template_name: row.template_name,
@@ -167,48 +166,18 @@ export class TemplatesTableComponent implements OnInit {
         })
       );
     } else {
-      const index = this.legacy_templates_list.controls.findIndex(
-        (a) => a.value.template_name === row.template_name
+      const index = this.selectionIndexList.selected.findIndex(
+        () => checkedRowIndex.is_checked === event.checked
       );
+      this.selectionIndexList.selected.splice(index, 1);
+
       this.legacy_templates_list.removeAt(index);
     }
-    return (checkedRowIndex.is_checked = event.checked);
   }
 
-  onSelectAllAfterFilter(event: MatCheckboxChange) {
-    // this.cdr.markForCheck();
-    // if (event.checked) {
-    //   this.selectionIndexList = new SelectionModel<ISourceIndexList>(
-    //     true,
-    //     this.sourceIndexListMatSource.filteredData
-    //   );
-    //   this.selectionIndexList.selected.map((item) => {
-    //     item.is_checked = true;
-    //     return item;
-    //   });
-    //
-    //   this.source_index_list.patchValue(this.selectionIndexList.selected);
-    //   const filteredSourceIndexList = this.source_index_list.controls.filter(
-    //     (a) => a.value !== null
-    //   );
-    //   const newSourceIndexList: UntypedFormArray = new UntypedFormArray([]);
-    //   filteredSourceIndexList.forEach((item) => {
-    //     newSourceIndexList.push(item);
-    //   });
-    //
-    //   this.source_index_list.patchValue(newSourceIndexList.value);
-    // } else {
-    //   this.selectionIndexList.selected.map((item) => {
-    //     item.is_checked = false;
-    //     return item;
-    //   });
-    //   this.source_index_list.patchValue(this.selectionIndexList.selected);
-    // }
-  }
-
-  onRun() {
-    console.group('%c GROUP', 'color:#84B59F');
-    console.log(this.projectForm.value);
-    console.groupEnd();
+  applyFilterForSourceIndexTable(event: KeyboardEvent) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.sourceIndexListMatSource.filter = filterValue.trim().toLowerCase();
+    this.isOnFilter = (event.target as HTMLInputElement).value !== '';
   }
 }
