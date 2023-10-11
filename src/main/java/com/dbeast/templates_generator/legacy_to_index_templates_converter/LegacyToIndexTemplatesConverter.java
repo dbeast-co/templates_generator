@@ -106,7 +106,7 @@ public class LegacyToIndexTemplatesConverter {
         }
         try {
             GeneralUtils.zipDirectory(TemplatesGenerator.projectsFolder + projectId,
-                    TemplatesGenerator.projectsFolder + projectId + "/" + EAppSettings.ANALYZER_TEMPLATE_ZIP_FILE);
+                    TemplatesGenerator.projectsFolder + projectId + "/" + EAppSettings.ANALYZER_TEMPLATE_ZIP_FILE.getConfigurationParameter());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
