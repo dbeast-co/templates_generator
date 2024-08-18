@@ -17,6 +17,7 @@ import com.dbeast.templates_generator.templates_generator.pojo.fields_properties
 import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.*;
 import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_settings.*;
 import com.dbeast.templates_generator.utils.GeneralUtils;
+import com.dbeast.templates_generator.utils.JSONUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,11 +25,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.IndexTemplateMetadata;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 //TODO change to configuration file from statics
@@ -217,12 +221,25 @@ public class MappingGenerator {
             if (project.getActions().isGenerateDedicatedComponentsTemplate()) {
                 if (project.getActions().isSeparateMappingsAndSettings()) {
                     //Generate mapping component
-                    generationResult = generationResult && generateComponentTemplate(
-                            project.getOutputSettings().getTemplateProperties(),
-                            projectId,
-                            castMapToObject(templateGeneratedMapping.get("mappings")),
-                            new HashMap<>(),
-                            "-mapping-component");
+                    if (indexSettings.containsKey("analysis")) {
+                        Map<String, Map<String, Object>> analyzerSettings = new HashMap<>();
+                        analyzerSettings.put("analysis", indexSettings.get("analysis"));
+                        indexSettings.remove("analysis");
+                        generationResult = generationResult && generateComponentTemplate(
+                                project.getOutputSettings().getTemplateProperties(),
+                                projectId,
+                                castMapToObject(templateGeneratedMapping.get("mappings")),
+                                analyzerSettings,
+                                "-mapping-component");
+                    } else {
+                        generationResult = generationResult && generateComponentTemplate(
+                                project.getOutputSettings().getTemplateProperties(),
+                                projectId,
+                                castMapToObject(templateGeneratedMapping.get("mappings")),
+                                new HashMap<>(),
+                                "-mapping-component");
+                    }
+
                     //Generate settings component
                     generationResult = generationResult && generateComponentTemplate(
                             project.getOutputSettings().getTemplateProperties(),
@@ -285,6 +302,7 @@ public class MappingGenerator {
         }
         return generationResult;
     }
+
 
     private void compareToExistingTemplateAndUpdate(final RestHighLevelClient client,
                                                     final boolean isTemplate,
@@ -371,8 +389,15 @@ public class MappingGenerator {
         templateOutput.setTemplate(template);
         templateOutput.setComposed_of(componentsList);
 
-        String templateFile = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName() + "-index-template.json";
-        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName()  + "-all-in-one.json",
+                generateIndexTemplateAPIRequest(outputSettings.getTemplateName())
+        );
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName()  + "-all-in-one.json",
+                templateOutput);
+        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(
+                TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName() + "-index-template.json",
                 generateIndexTemplateAPIRequest(outputSettings.getTemplateName()),
                 templateOutput);
     }
@@ -391,8 +416,15 @@ public class MappingGenerator {
             template.setMappings(templateMapping);
         }
         templateOutput.setTemplate(template);
-        String templateFile = TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName() + fileNameSuffix + ".json";
-        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName()  + "-all-in-one.json",
+                generateComponentTemplateAPIRequest(outputSettings.getTemplateName() + fileNameSuffix)
+        );
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName()  + "-all-in-one.json",
+                templateOutput);
+        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(
+                TemplatesGenerator.projectsFolder + projectName + "/" + outputSettings.getTemplateName() + fileNameSuffix + ".json",
                 generateComponentTemplateAPIRequest(outputSettings.getTemplateName() + fileNameSuffix),
                 templateOutput);
     }

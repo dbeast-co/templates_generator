@@ -123,7 +123,7 @@ public class MappingGeneratorController {
 
         return true;
     }
-//TODO transfer to project api
+
     public boolean runProject(final ProjectPOJO project) throws IndexNotFoundOrEmptyException, TemplateNotFoundException {
         saveProject(project);
         MappingGenerator mappingGenerator = new MappingGenerator(TemplatesGenerator.dateFormats, project);
