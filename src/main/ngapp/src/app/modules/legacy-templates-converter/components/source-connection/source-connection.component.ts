@@ -61,7 +61,7 @@ export class SourceConnectionComponent implements OnInit {
             .patchValue(res.cluster_status);
         },
         error: (err) => {
-          debugger;
+          // debugger;
           this.projectForm
             .get('connection_settings')
             .get('status')
