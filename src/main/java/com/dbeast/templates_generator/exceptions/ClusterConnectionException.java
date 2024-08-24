@@ -7,9 +7,10 @@ public class ClusterConnectionException extends Exception{
      * call to {@link #initCause}.
      *
      * @param host The hostname of the cluster for connection. The detail message is saved for
-     *                later retrieval by the {@link #getMessage()} method.
+     *             later retrieval by the {@link #getMessage()} method.
+     * @param exception Original response exception
      */
-    public ClusterConnectionException(String host) {
-        super(String.format("Error! Can't connect to the cluster. Host '%s' incorrect or doesn't respond.", host));
+    public ClusterConnectionException(String host, Exception exception) {
+        super(String.format("Error! Can't connect to the cluster. Host '%s'. ", host) + "Exception: " + exception.getMessage());
     }
 }

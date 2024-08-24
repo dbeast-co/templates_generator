@@ -271,7 +271,7 @@ public class ElasticsearchController {
             ClusterHealthResponse response = client.cluster().health(request, RequestOptions.DEFAULT);
             return response.getStatus().toString();
         } catch (Exception e) {
-            throw new ClusterConnectionException(connectionSettings.getEs_host());
+            throw new ClusterConnectionException(connectionSettings.getEs_host(), e);
         } finally {
             try {
                 if (client != null) {
@@ -290,7 +290,7 @@ public class ElasticsearchController {
             ClusterHealthResponse response = client.cluster().health(request, RequestOptions.DEFAULT);
             return response.getStatus().toString();
         } catch (Exception e) {
-            throw new ClusterConnectionException(client.getLowLevelClient().getNodes().toString());
+            throw new ClusterConnectionException(client.getLowLevelClient().getNodes().toString(), e);
         }
     }
 

@@ -38,6 +38,30 @@ public class LegacyToIndexTemplatesConverter {
     ElasticsearchController elasticsearchController = new ElasticsearchController();
 
 
+    public Response runProject(Response response,
+                               TemplateConverterSettingsPOJO project) {
+        GeneralUtils.createFolderDeleteOldIfExists(TemplatesGenerator.projectsFolder + project.getProjectId());
+        project.getLegacyTemplatesList().stream()
+                .filter(TemplateFromListPOJO::isIs_checked)
+                .forEach(template -> {
+                    String legacyTemplate = null;
+                    try {
+                        legacyTemplate = elasticsearchController.getTemplateParameters(
+                                project.getConnectionSettings(),
+                                template.getTemplateName(),
+                                project.getProjectId());
+                        convertToComponentTemplate(legacyTemplate,
+                                project.isGenerateDedicatedComponentsTemplate(),
+                                project.isSeparateMappingsAndSettings(),
+                                project.getProjectId());
+                    } catch (JsonProcessingException | ClusterConnectionException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+        return response;
+    }
+
+
     public void convertToComponentTemplate(final String legacyTemplate,
                                            final boolean generateDedicatedComponentsTemplate,
                                            final boolean separateMappingsAndSettings,
@@ -60,12 +84,25 @@ public class LegacyToIndexTemplatesConverter {
 
         if (generateDedicatedComponentsTemplate) {
             if (separateMappingsAndSettings) {
-                generationResult = generationResult && generateComponentTemplate(
-                        templateName,
-                        projectId,
-                        mappings,
-                        new HashMap<>(),
-                        "-mapping-component");
+                //Generate mappings
+                if (settings.containsKey("index") && settings.get("index").containsKey("analysis")) {
+                    Map<String, Map<String, Object>> analyzerSettings = new HashMap<>();
+                    analyzerSettings.put("analysis", (Map<String, Object>) settings.get("index").get("analysis"));
+                    generationResult = generateComponentTemplate(
+                            templateName,
+                            projectId,
+                            mappings,
+                            analyzerSettings,
+                            "-mapping-component");
+                    settings.get("index").remove("analysis");
+                } else {
+                    generationResult = generationResult && generateComponentTemplate(
+                            templateName,
+                            projectId,
+                            mappings,
+                            new HashMap<>(),
+                            "-mapping-component");
+                }
                 //Generate settings component
                 generationResult = generationResult && generateComponentTemplate(
                         templateName,
@@ -106,63 +143,12 @@ public class LegacyToIndexTemplatesConverter {
         }
         try {
             GeneralUtils.zipDirectory(TemplatesGenerator.projectsFolder + projectId,
-                    TemplatesGenerator.projectsFolder + projectId + "/" + EAppSettings.ANALYZER_TEMPLATE_ZIP_FILE);
+                    TemplatesGenerator.projectsFolder + projectId + "/" + EAppSettings.ANALYZER_TEMPLATE_ZIP_FILE.getConfigurationParameter());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Response runProject(Response response,
-                               TemplateConverterSettingsPOJO project){
-        GeneralUtils.createFolderIfNotExists(TemplatesGenerator.projectsFolder + project.getProjectId());
-        project.getLegacyTemplatesList().stream()
-                .filter(TemplateFromListPOJO::isIs_checked)
-                .forEach(template -> {
-                    String legacyTemplate = null;
-                    try {
-                        legacyTemplate = elasticsearchController.getTemplateParameters(
-                                project.getConnectionSettings(),
-                                template.getTemplateName(),
-                                project.getProjectId());
-                        convertToComponentTemplate(legacyTemplate,
-                                project.isGenerateDedicatedComponentsTemplate(),
-                                project.isSeparateMappingsAndSettings(),
-                                project.getProjectId());
-                    } catch (JsonProcessingException | ClusterConnectionException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-//        try {
-
-//            getFile(response, project.getProjectId());
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-        return response;
-    }
-
-    public void getFile(Response response, String projectId) throws IOException {
-        String fileName = "templates.zip";
-
-        File file = new File(TemplatesGenerator.projectsFolder + projectId + "/"
-                + fileName);
-
-        response.raw().setContentType("application/octet-stream");
-        response.raw().setHeader("Content-Disposition", "attachment; filename=" + file.getName());
-
-        response.raw().setContentLength((int) file.length());
-        response.status(200);
-
-        ServletOutputStream os = response.raw().getOutputStream();
-        try {
-            os.write(Files.readAllBytes(file.toPath()));
-        } catch (NoSuchFileException e) {
-            os.write(new byte[0]);
-        }
-        os.flush();
-        os.close();
-//        return response;
-    }
 
     public void getTemplatesList(TemplateConverterSettingsPOJO project) {
         Set<String> templates = elasticsearchController.getLegacyTemplateList(project.getConnectionSettings(), project.getProjectId());
@@ -194,8 +180,22 @@ public class LegacyToIndexTemplatesConverter {
         templateOutput.setTemplate(template);
         templateOutput.setComposed_of(componentsList);
 
-        String templateFile = TemplatesGenerator.projectsFolder + projectId + "/" + templateName + "-index-template.json";
-        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectId + "/" + "all-templates.json",
+                generateIndexTemplateAPIRequest(templateName)
+        );
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectId + "/" + "all-templates.json",
+                templateOutput);
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectId + "/" + templateName + "-all-in-one.json",
+                generateIndexTemplateAPIRequest(templateName)
+        );
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectId + "/" + templateName + "-all-in-one.json",
+                templateOutput);
+        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(
+                TemplatesGenerator.projectsFolder + projectId + "/" + templateName + "-index-template.json",
                 generateIndexTemplateAPIRequest(templateName),
                 templateOutput);
     }
@@ -214,8 +214,22 @@ public class LegacyToIndexTemplatesConverter {
             template.setMappings(templateMapping);
         }
         templateOutput.setTemplate(template);
-        String templateFile = TemplatesGenerator.projectsFolder + projectId + "/" + templateName + fileNameSuffix + ".json";
-        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(templateFile,
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectId + "/" + "all-templates.json",
+                generateComponentTemplateAPIRequest(templateName + fileNameSuffix)
+        );
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectId + "/" + "all-templates.json",
+                templateOutput);
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectId + "/" + templateName + "-all-in-one.json",
+                generateComponentTemplateAPIRequest(templateName + fileNameSuffix)
+        );
+        GeneralUtils.appendJsonToToFile(
+                TemplatesGenerator.projectsFolder + projectId + "/" + templateName + "-all-in-one.json",
+                templateOutput);
+        return GeneralUtils.saveJsonToToFileWithAdditionalFirstString(
+                TemplatesGenerator.projectsFolder + projectId + "/" + templateName + fileNameSuffix + ".json",
                 generateComponentTemplateAPIRequest(templateName + fileNameSuffix),
                 templateOutput);
     }

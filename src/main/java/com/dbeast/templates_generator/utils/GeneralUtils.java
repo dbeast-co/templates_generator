@@ -32,6 +32,7 @@ public class GeneralUtils {
         File file = new File(fileAbsolutePath);
         try {
             JsonGenerator jsonGenerator = mapper.getFactory().createGenerator(new FileOutputStream(file));
+
             jsonGenerator.writeRaw(firstString + "\n");
             mapper.writerWithDefaultPrettyPrinter().writeValue(jsonGenerator, context);
             jsonGenerator.close();
@@ -46,6 +47,33 @@ public class GeneralUtils {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static boolean appendJsonToToFile(final String fileAbsolutePath,
+                                             final Object context) {
+        File file = new File(fileAbsolutePath);
+        boolean isExistingFile = file.exists();
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            FileWriter fileWriter = new FileWriter(file, true);
+            JsonGenerator jsonGenerator = mapper.getFactory().createGenerator(fileWriter);
+            if (isExistingFile) {
+                jsonGenerator.writeRaw("\n");
+            }
+            mapper.writerWithDefaultPrettyPrinter().writeValue(jsonGenerator, context);
+            jsonGenerator.close();
+            if (logger.isDebugEnabled()) {
+                logger.debug("File: " + fileAbsolutePath + " successfully created");
+            }
+            return true;
+        } catch (IOException e) {
+            logger.error("There is the error in creating file: " +
+                    fileAbsolutePath + "\n" +
+                    e);
+            e.printStackTrace();
+            return false;
+        }
+
     }
 
     public static String generateNewUID() {
@@ -142,10 +170,20 @@ public class GeneralUtils {
     }
 
     public static void deleteDirectoryStream(Path path) throws IOException {
+
         Files.walk(path)
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(File::delete);
+    }
+
+    public static void deleteDirectoryStream(String path) {
+        final Path folder = Paths.get(path);
+        try {
+            deleteDirectoryStream(folder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static boolean deleteFolderThatContainsSpecifiedFiles(final String folderAbsolutePath, final String containedFile) {
@@ -244,6 +282,7 @@ public class GeneralUtils {
             return false;
         }
     }
+
     public static boolean zipTemplatesDirectory(String sourceDirectoryPath, String zipPath) throws IOException {
         Files.deleteIfExists(Paths.get(zipPath));
         Path zipFilePath = Files.createFile(Paths.get(zipPath));
@@ -390,7 +429,7 @@ public class GeneralUtils {
         return result;
     }
 
-    private static String readFileLineByLine(Path filePath) {
+    public static String readFileLineByLine(Path filePath) {
         StringBuilder contentBuilder = new StringBuilder();
         try (Stream<String> stream = Files.lines(filePath, StandardCharsets.UTF_8)) {
             stream.forEach(s -> contentBuilder.append(s).append("\n"));
