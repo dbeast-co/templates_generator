@@ -1,80 +1,91 @@
 <form [formGroup]="projectForm">
-<div class="sources_container">
-  <div class="connection_settings_wrapper">
-    <div formGroupName="connection_settings">
-      <div class="source_cluster" >
-        <h2 class="source_title">Source</h2>
-        <div class="host_wrapper">
-          <mat-form-field [floatLabel]="'never'">
-            <input matInput type="text" formControlName="es_host" placeholder="Host"  ylDisableEnter>
-          </mat-form-field>
-          <mat-error class="es_host_source_error" *ngIf="es_source_host?.errors?.pattern ">
-            Host format is invalid
-          </mat-error>
-        </div>
-        <mat-checkbox #auth formControlName="authentication_enabled" (change)="onUseSourceAuth($event)" [checked]="source_use_authentication_enabled.value">Use
-          authentication
-        </mat-checkbox>
-        <div class="credentials_wrapper" style="position: relative">
-          <div class="form-field-container">
-            <mat-form-field class="username legacy" [floatLabel]="'never'">
-              <input matInput type="text" ylDisableEnter formControlName="username" placeholder="Username"
-                     (input)="onSourceInput(source_username.value,source_password.value)">
+  <div class="sources_container">
+    <div class="connection_settings_wrapper">
+      <div formGroupName="connection_settings">
+        <div class="source_cluster">
+          <h2 class="source_title">Source</h2>
+          <div class="host_wrapper">
+            <mat-form-field [floatLabel]="'never'">
+              <input formControlName="es_host" matInput placeholder="Host" type="text" ylDisableEnter>
             </mat-form-field>
-
-            <mat-error class="username_error" *ngIf="source_username.errors && source_username.touched">This field is
-              required
+            <mat-error *ngIf="es_source_host?.errors?.pattern " class="es_host_source_error">
+              Host format is invalid
             </mat-error>
           </div>
-          <div class="form-field-container">
-            <mat-form-field class="password legacy" [floatLabel]="'never'">
-              <input matInput type="password" ylDisableEnter formControlName="password" placeholder="Password"
-                     (input)="onSourceInput(source_username.value,source_password.value)">
-            </mat-form-field>
-            <mat-error class="password_error legacy" *ngIf="source_password.errors && source_password.touched">This
-              field is required
-            </mat-error>
-          </div>
-        </div>
-        <div class="ssl">
-          <div class="left">
-            <mat-checkbox #ssl formControlName="ssl_enabled" (change)="onSourceSSL($event)">SSL</mat-checkbox>
-          </div>
-          <div class="right_source" [ngClass]="{'show': showSourceSSLBtn}">
-<!--            <span matTooltip="You don't have to provide the certificate. In case  of empty certificate we will disable certificate validation" matTooltipClass="custom-tooltip" class="tooltip_info">?</span>-->
-<!--            <span>SSL Certificate</span>-->
-<!--            <div class="upload_ssl" [ngClass]="{'disabled': !showSourceSSLBtn}">-->
-<!--              <label for="ssl-source">Browse</label>-->
-<!--              <input type="file" name="ssl" #fileSourceRef id="ssl-source" (change)="onImportSSL($event,'source')"/>-->
-<!--              <mat-spinner [diameter]="20" ylCustomSpinner color="#fff"-->
-<!--                           *ngIf="isUploadSSLFileForSource"></mat-spinner>-->
-<!--              <img src="assets/icons/done-white-18dp.svg" alt="" *ngIf="isSuccessForSource" matTooltip="Uploaded!">-->
-<!--              <img src="assets/icons/close-white-18dp.svg" alt="" *ngIf="isErrorForSource" matTooltip="Failed!">-->
-<!--            </div>-->
-          </div>
-        </div>
+          <mat-checkbox #auth (change)="onUseSourceAuth($event)" [checked]="source_use_authentication_enabled.value"
+                        formControlName="authentication_enabled">Use
+            authentication
+          </mat-checkbox>
+          <div class="credentials_wrapper" style="position: relative">
+            <div class="form-field-container">
+              <mat-form-field [floatLabel]="'never'" class="username legacy">
+                <input (input)="onSourceInput(source_username.value,source_password.value)" formControlName="username"
+                       matInput placeholder="Username" type="text"
+                       ylDisableEnter>
+              </mat-form-field>
 
-        <div class="actions">
-          <div class="left">
-            <button mat-raised-button type="button" (click)="onTestSource()"
-                    [disabled]="es_source_host.value === ''  || es_source_host?.errors?.pattern || isDisableSourceTestButton">Test
-            </button>
-            <button mat-raised-button type="button" (click)="onGetTemplates()"
-                    [disabled]="!isTestSourceClicked && source_cluster_status !== 'YELLOW' || !isTestSourceClicked && source_cluster_status !== 'GREEN'">
-              Get templates
-            </button>
+              <mat-error *ngIf="source_username.errors && source_username.touched" class="username_error">This field is
+                required
+              </mat-error>
+            </div>
+            <div class="form-field-container">
+              <mat-form-field [floatLabel]="'never'" class="password legacy">
+                <input (input)="onSourceInput(source_username.value,source_password.value)" formControlName="password"
+                       matInput placeholder="Password" type="password"
+                       ylDisableEnter>
+              </mat-form-field>
+              <mat-error *ngIf="source_password.errors && source_password.touched" class="password_error legacy">This
+                field is required
+              </mat-error>
+            </div>
           </div>
-          <div class="right">
-            <mat-form-field class="status"
-                            [ngClass]="{'warn': source_cluster_status === 'YELLOW' ||source_status_on_reload_page === 'YELLOW','danger': source_cluster_status === 'RED' ||source_status_on_reload_page === 'RED' || source_cluster_status === 'ERROR' ,'success': source_cluster_status === 'GREEN' || source_status_on_reload_page === 'GREEN','new_stopped': source_cluster_status === '' ||source_status_on_reload_page === '' }" #sourceClusterStatus>
-              <input matInput type="text" formControlName="status" readonly  >
-            </mat-form-field>
+          <div class="ssl">
+            <div class="left">
+              <mat-checkbox #ssl (change)="onSourceSSL($event)" formControlName="ssl_enabled">SSL</mat-checkbox>
+            </div>
+            <div [ngClass]="{'show': showSourceSSLBtn}" class="right_source">
+              <!--            <span matTooltip="You don't have to provide the certificate. In case  of empty certificate we will disable certificate validation" matTooltipClass="custom-tooltip" class="tooltip_info">?</span>-->
+              <!--            <span>SSL Certificate</span>-->
+              <!--            <div class="upload_ssl" [ngClass]="{'disabled': !showSourceSSLBtn}">-->
+              <!--              <label for="ssl-source">Browse</label>-->
+              <!--              <input type="file" name="ssl" #fileSourceRef id="ssl-source" (change)="onImportSSL($event,'source')"/>-->
+              <!--              <mat-spinner [diameter]="20" ylCustomSpinner color="#fff"-->
+              <!--                           *ngIf="isUploadSSLFileForSource"></mat-spinner>-->
+              <!--              <img src="assets/icons/done-white-18dp.svg" alt="" *ngIf="isSuccessForSource" matTooltip="Uploaded!">-->
+              <!--              <img src="assets/icons/close-white-18dp.svg" alt="" *ngIf="isErrorForSource" matTooltip="Failed!">-->
+              <!--            </div>-->
+            </div>
+          </div>
+
+          <div class="actions">
+            <div class="left">
+              <button (click)="onTestSource()"
+                      [disabled]="es_source_host.value === ''  || es_source_host?.errors?.pattern || isDisableSourceTestButton"
+                      mat-raised-button
+                      type="button">
+                Test
+              </button>
+              <button (click)="onGetTemplates()"
+                      [disabled]="!isTestSourceClicked && source_cluster_status !== 'YELLOW' || !isTestSourceClicked && source_cluster_status !== 'GREEN'"
+                      mat-raised-button
+                      type="button">
+                Get templates
+              </button>
+            </div>
+            <div class="right">
+              <mat-form-field #sourceClusterStatus
+                              [ngClass]="{'warn': source_cluster_status === 'YELLOW' ||source_status_on_reload_page === 'YELLOW','danger': source_cluster_status === 'RED' ||source_status_on_reload_page === 'RED' || source_cluster_status === 'ERROR' ,'success': source_cluster_status === 'GREEN' || source_status_on_reload_page === 'GREEN','new_stopped': source_cluster_status === '' ||source_status_on_reload_page === '' }"
+                              class="status">
+                <input formControlName="status" matInput readonly type="text">
+              </mat-form-field>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
 
   </div>
-
-</div>
 </form>
+
+<yl-error (isCloseEmit)="onCloseErrorDialog($event)" *ngIf="isShowErrorDialog" [errorMessage]="errorMessage"></yl-error>

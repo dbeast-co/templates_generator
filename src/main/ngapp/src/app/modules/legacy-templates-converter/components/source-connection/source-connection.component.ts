@@ -22,6 +22,8 @@ export class SourceConnectionComponent implements OnInit {
   source_username: FormControl;
   source_password: FormControl;
   projectId: FormControl;
+  isShowErrorDialog: boolean = false;
+  errorMessage: string = '';
 
   constructor(
     private projectFormService: ProjectFormService,
@@ -60,18 +62,23 @@ export class SourceConnectionComponent implements OnInit {
             .get('status')
             .patchValue(res.cluster_status);
         },
-        error: (err) => {
-          debugger;
+        error: (err: any) => {
           this.projectForm
             .get('connection_settings')
             .get('status')
             .patchValue(err.error.cluster_status);
           this.source_cluster_status = err.error.cluster_status;
+          this.isShowErrorDialog = true;
+          this.errorMessage = err.error.error;
         },
       });
   }
 
   onGetTemplates() {
     this.projectFormService.setTemplatesEvent(true);
+  }
+
+  onCloseErrorDialog($event: boolean) {
+    this.isShowErrorDialog = false;
   }
 }

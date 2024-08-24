@@ -31,9 +31,6 @@ export class GenerateSettingsComponent implements OnInit {
     this.isLoadingEmit.emit(true);
     this.apiService.runTemplatesConverter(this.projectForm).subscribe(
       (res) => {
-        console.group('%c SUCCESS', 'color:#84B59F');
-        console.log('SUCCESS');
-        console.groupEnd();
         this.isLoadingEmit.emit(false);
         this.toastrService.success('', 'Converted  successfully');
       },
