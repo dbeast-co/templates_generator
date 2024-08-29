@@ -17,7 +17,7 @@ import java.util.HashMap;
 
 import static spark.Spark.*;
 
-public class RESTIndexAnalyzerSettings extends ARest {
+public class RESTTemplateGeneratorSettings extends ARest {
     private static final Logger logger = LogManager.getLogger();
     private final DataWarehouse dataWarehouse = DataWarehouse.getInstance();
     private final MappingGeneratorController mappingGeneratorController = MappingGeneratorController.getInstance();

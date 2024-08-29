@@ -4,14 +4,18 @@ import {
   IExistingTemplateActions,
   ProjectConfigurationModel,
 } from '../../../models/project-configuration.model';
+import {BehaviorSubject} from 'rxjs';
 
 @Injectable()
 export class FormService {
   private projectConfigurationForm: FormGroup;
 
+
+
   constructor(private fb: FormBuilder) {
     this.projectConfigurationForm = this.fb.group({});
   }
+
 
   getProjectConfigurationForm(project: ProjectConfigurationModel): FormGroup {
     console.log(project);
@@ -21,7 +25,14 @@ export class FormService {
       project_name: [project?.project_name, Validators.required],
       actions: this.fb.group({
         is_generate_index: [project?.actions.is_generate_index],
+        is_generate_index_template: [project?.actions.is_generate_index_template],
         is_generate_template: [project?.actions.is_generate_template],
+        is_generate_legacy_template: [project?.actions.is_generate_legacy_template],
+
+        is_generate_dedicated_components_template: [project?.actions.is_generate_dedicated_components_template],
+        is_separate_mappings_and_settings: [project?.actions.is_separate_mappings_and_settings],
+
+
       }),
       input: this.fb.group({
         input_settings: this.fb.group({

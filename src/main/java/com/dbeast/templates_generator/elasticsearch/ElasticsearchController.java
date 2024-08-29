@@ -188,6 +188,26 @@ public class ElasticsearchController {
                                                          final String projectId) {
         return getTemplateOrIndexList(connectionSettings, "/_cat/templates?h=name&format=json", projectId);
     }
+    public Set<String> getLegacyTemplateList(final EsSettingsPOJO connectionSettings,
+                                             final String projectId) {
+//        return getTemplateOrIndexList(connectionSettings, "/_cat/templates?h=name&format=json", projectId);
+        Response response;
+        try {
+            RestClient client = elasticsearchClient.getLowLevelClient(connectionSettings, projectId);
+            response = client.performRequest(new Request("GET", "_template?filter_path=*.order"));
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // parse the JSON response
+                String rawBody = EntityUtils.toString(response.getEntity());
+                TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
+                };
+                HashMap<String, Object> templatesList = mapper.readValue(rawBody, typeRef);
+                return templatesList.keySet();
+            }
+        } catch (IOException | ClusterConnectionException e) {
+            logger.error(e.getMessage());
+        }
+        return new HashSet<>();
+    }
 
     //TODO add catch exception
     private List<HashMap<String, String>> getTemplateOrIndexList(final EsSettingsPOJO connectionSettings,
@@ -251,7 +271,7 @@ public class ElasticsearchController {
             ClusterHealthResponse response = client.cluster().health(request, RequestOptions.DEFAULT);
             return response.getStatus().toString();
         } catch (Exception e) {
-            throw new ClusterConnectionException(connectionSettings.getEs_host());
+            throw new ClusterConnectionException(connectionSettings.getEs_host(), e);
         } finally {
             try {
                 if (client != null) {
@@ -270,7 +290,7 @@ public class ElasticsearchController {
             ClusterHealthResponse response = client.cluster().health(request, RequestOptions.DEFAULT);
             return response.getStatus().toString();
         } catch (Exception e) {
-            throw new ClusterConnectionException(client.getLowLevelClient().getNodes().toString());
+            throw new ClusterConnectionException(client.getLowLevelClient().getNodes().toString(), e);
         }
     }
 
@@ -293,8 +313,9 @@ public class ElasticsearchController {
             Max max = aggregations.get("max");
 
             return new DataPeriodFromEs(
-                    new Double(min.getValue()).longValue(),
-                    new Double(max.getValue()).longValue()
+                    (long)min.getValue(),
+//                    new Double(min.getValue()).longValue(),
+                    (long)max.getValue()
             );
         } catch (IOException | ElasticsearchException e) {
             logger.error(e);

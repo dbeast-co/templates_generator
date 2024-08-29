@@ -359,15 +359,25 @@
 
         <div class="col"><h2>Actions</h2>
           <div class="actions">
-            <mat-checkbox #generateTemplateCheckbox formControlName="is_generate_template"
-                        [ylDisableControl]="generateTemplateCheckbox.checked?is_add_fields_from_existing_templateForTemplate?.value === false:is_add_fields_from_existing_templateForTemplate?.value === true"  (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate
-              template
-            </mat-checkbox>
-            <mat-checkbox #generateIndexCheckbox formControlName="is_generate_index"
-                          (change)="onCheckGenerateTemplateOrIndex($event,1)">
-              Generate
-              index
-            </mat-checkbox>
+<!--            <mat-checkbox #generateTemplateCheckbox formControlName="is_generate_template"-->
+<!--                        [ylDisableControl]="generateTemplateCheckbox.checked?is_add_fields_from_existing_templateForTemplate?.value === false:is_add_fields_from_existing_templateForTemplate?.value === true"  (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate-->
+<!--              template-->
+<!--            </mat-checkbox>-->
+<!--            <mat-checkbox #generateIndexCheckbox formControlName="is_generate_index"-->
+<!--                          (change)="onCheckGenerateTemplateOrIndex($event,1)">-->
+<!--              Generate-->
+<!--              index-->
+<!--            </mat-checkbox>-->
+            <mat-checkbox #generateTemplateCheckbox formControlName="is_generate_index_template" (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate index template</mat-checkbox>
+            <mat-checkbox formControlName="is_generate_legacy_template" (change)="onCheckGenerateTemplateOrIndex($event,0)">Generate legacy template</mat-checkbox>
+            <ng-container  >
+              <mat-checkbox  formControlName="is_generate_dedicated_components_template">Generate dedicated components
+                template
+              </mat-checkbox>
+              <mat-checkbox  formControlName="is_separate_mappings_and_settings">Separate mappings settings
+              </mat-checkbox>
+            </ng-container>
+            <mat-checkbox formControlName="is_generate_index" (change)="onCheckGenerateTemplateOrIndex($event,1)">Generate index</mat-checkbox>
           </div>
         </div>
 

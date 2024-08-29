@@ -161,7 +161,7 @@
 
   .grid {
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto 34%;
     grid-gap: 30px;
     grid-template-areas:
              "A B C"
@@ -296,12 +296,13 @@
             flex-direction: column;
             position: relative;
 
-            mat-error.existing_template_actions{
+            mat-error.existing_template_actions {
               position: absolute;
               top: 53px;
               left: 28px;
             }
-            mat-error.existing_template_actions_index{
+
+            mat-error.existing_template_actions_index {
               position: absolute;
               top: 53px;
               left: 28px;
@@ -315,19 +316,34 @@
     .actions_container {
       @extend .template_properties_container;
       grid-area: C;
-      max-height: 14.1%;
+      max-height: 19.5%;
       max-width: 100%;
       align-self: flex-start;
-      margin-top: 4rem;
+      margin-top: 3.1rem;
+
 
       .col {
         display: flex;
         width: 100%;
 
         .actions {
-          display: flex;
-          justify-content: space-around;
+          //display: flex;
+          //justify-content: space-around;
+          //flex-wrap: wrap;
+          //max-width: 80%;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
           margin-top: 1rem;
+          grid-gap: 0.4rem;
+
+          mat-checkbox {
+            &:last-child {
+              //justify-self: flex-end;
+              //transform: translateX(105px);
+            }
+          }
+
+
         }
       }
 
@@ -396,7 +412,7 @@
       max-width: 100%;
       max-height: 69%;
       align-self: center;
-      margin-top: 10.7rem;
+      margin-top: 11.7rem;
       @extend .template_properties_container;
 
       .col {

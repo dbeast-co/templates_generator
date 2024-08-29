@@ -11,6 +11,7 @@ import {HttpClient} from '@angular/common/http';
 import {ErrorComponent} from './error/error.component';
 import {DisableControlDirective} from './disable-control.directive';
 import {ReactiveFormsModule} from '@angular/forms';
+import {DisableEnterDirective} from './directives/disable-enter.directive';
 
 export function initializeAppFn(
   appConfigService: AppConfigService
@@ -21,8 +22,8 @@ export function initializeAppFn(
 }
 
 @NgModule({
-  declarations: [YesNoComponent, ErrorComponent, DisableControlDirective],
-  exports: [YesNoComponent, ErrorComponent, DisableControlDirective],
+  declarations: [YesNoComponent, ErrorComponent, DisableControlDirective,DisableEnterDirective],
+  exports: [YesNoComponent, ErrorComponent, DisableControlDirective,DisableEnterDirective],
   imports: [
     CommonModule,
     MaterialModule,

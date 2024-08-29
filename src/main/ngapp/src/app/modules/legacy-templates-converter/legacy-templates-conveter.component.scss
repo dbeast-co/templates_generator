@@ -1,0 +1,44 @@
+@import "../../modules/new-project-configuration/components/project-configuration/project-configuration.component";
+
+.container {
+  &.legacy {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  z-index: 100;
+
+  .spinner_wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #ffffff;
+
+      mat-spinner {
+        position: absolute;
+        top: 9px;
+        left: 9px;
+      }
+
+
+      //display: flex;
+      //align-items: center;
+      //justify-content: center;
+    }
+
+  }
+}

@@ -1,0 +1,16 @@
+<div class="container legacy">
+  <app-source-connection></app-source-connection>
+  <app-templates-table></app-templates-table>
+  <app-generate-settings (isLoadingEmit)="isLoading.next($event)"></app-generate-settings>
+
+</div>
+
+<div *ngIf="isLoading | async" class="overlay">
+  <div class="spinner_wrapper">
+    <div class="spinner">
+      <mat-spinner [diameter]="30" color="#087F8C" ylCustomSpinner></mat-spinner>
+    </div>
+  </div>
+</div>
+
+

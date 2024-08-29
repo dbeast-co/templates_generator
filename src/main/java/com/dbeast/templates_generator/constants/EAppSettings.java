@@ -6,6 +6,7 @@ public enum EAppSettings {
     DATE_FORMATS_FILE("date_formats.yml"),
     ANALYZER_CHANGELOG_FILE("analyzer_changelog.log"),
     ANALYZER_ALL_LOGS_FILE("all.zip"),
+    ANALYZER_TEMPLATE_ZIP_FILE("template.zip"),
     PROJECTS_FOLDER("/projects/"),
     CONFIG_FOLDER("/config/"),
     CLIENT_FOLDER("/client/"),

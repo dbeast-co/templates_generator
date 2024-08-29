@@ -46,11 +46,15 @@ public class MainRest {
      * Initialize all REST APIs
      */
     private void initRestAPIs() {
-        RESTIndexAnalyzerSettings restIndexAnalyzerSettings = new RESTIndexAnalyzerSettings();
+        RESTTemplateGeneratorSettings restIndexAnalyzerSettings = new RESTTemplateGeneratorSettings();
         RESTProjectsMonitoring restProjectsMonitoring = new RESTProjectsMonitoring();
+        RESTLegacyToIndexTemplateSettings restLegacyToIndexTemplateSettings = new RESTLegacyToIndexTemplateSettings();
         path("/index_analyzer", () -> {
             restIndexAnalyzerSettings.rest();
             restProjectsMonitoring.rest();
+        });
+        path("/templates_converter", () -> {
+            restLegacyToIndexTemplateSettings.rest();
         });
     }
 

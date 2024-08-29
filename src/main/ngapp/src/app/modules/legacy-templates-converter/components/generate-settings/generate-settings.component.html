@@ -1,0 +1,23 @@
+<form [formGroup]="projectForm">
+
+  <div class="actions">
+    <button (click)="onRun()" mat-raised-button>
+      <span>Run</span>
+      <img src="assets/icons/play_arrow-white-18dp.svg">
+    </button>
+
+    <button (click)="onDownloadTemplate()" mat-raised-button>
+      <span>Download</span>
+      <img src="assets/icons/file_download_black_18dp.svg">
+    </button>
+  </div>
+
+  <div class="settings">
+    <h3>Generation settings</h3>
+    <mat-checkbox formControlName="is_generate_dedicated_components_template">Generate dedicated
+      components template
+    </mat-checkbox>
+    <mat-checkbox formControlName="is_separate_mappings_and_settings">Separate mappings and settings"
+    </mat-checkbox>
+  </div>
+</form>

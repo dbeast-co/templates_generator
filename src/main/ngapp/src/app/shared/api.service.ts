@@ -9,13 +9,14 @@ import {
 import { ISavedProject } from '../models/i-saved-project';
 import { IProjectMonitoring } from '../models/project-monitoring';
 import { AnalyzeResponseModel } from '../models/analyze-response.model';
+import { FormGroup } from '@angular/forms';
+import { LegacyTemplate } from '../models/legacy-template';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) {}
 
   getNewProjectConfiguration(): Observable<ProjectConfigurationModel> {
     return this.http.get<ProjectConfigurationModel>(
@@ -106,6 +107,7 @@ export class ApiService {
     );
   }
 
+
   validateProjectName(project_name): Observable<boolean> {
     return this.http.get<boolean>(
       `${environment.serverApi}/index_analyzer/project_settings/validate/${project_name}`
@@ -132,6 +134,37 @@ export class ApiService {
     return this.http.post<any>(
       `${environment.serverApi}/index_analyzer/project_settings/ssl_cert/${source}/${project_id}`,
       formData
+    );
+  }
+
+  testTemplatesConverter(project_id: string, form: any): Observable<Object> {
+    return this.http.post(
+      `${environment.serverApi}/templates_converter/test_cluster/${project_id}`,
+      form
+    );
+  }
+
+  getLegacyTemplates(form: FormGroup): Observable<LegacyTemplate> {
+    return this.http.post<LegacyTemplate>(
+      `${environment.serverApi}/templates_converter/get_templates`,
+      form.value
+    );
+  }
+
+  runTemplatesConverter(form: FormGroup): Observable<any> {
+    return this.http.post(
+      `${environment.serverApi}/templates_converter/run`,
+      form.value
+    );
+  }
+
+  downloadIndexTemplate(project_id): Observable<HttpResponse<Blob>> {
+    return this.http.get(
+      `${environment.serverApi}/templates_converter/download/${project_id}`,
+      {
+        responseType: 'blob',
+        observe: 'response',
+      }
     );
   }
 }

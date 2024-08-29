@@ -550,6 +550,10 @@ mat-error.mat-error {
   //position: absolute;
   //left: 26%;
   //top: 17%;
+
+  &.legacy{
+   top: 82%;
+  }
 }
 
 .mat-form-field-appearance-fill .mat-form-field-underline::before {

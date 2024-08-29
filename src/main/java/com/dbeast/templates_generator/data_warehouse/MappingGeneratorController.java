@@ -123,7 +123,7 @@ public class MappingGeneratorController {
 
         return true;
     }
-//TODO transfer to project api
+
     public boolean runProject(final ProjectPOJO project) throws IndexNotFoundOrEmptyException, TemplateNotFoundException {
         saveProject(project);
         MappingGenerator mappingGenerator = new MappingGenerator(TemplatesGenerator.dateFormats, project);
@@ -201,11 +201,12 @@ public class MappingGeneratorController {
         String fileName;
         switch (fileType) {
             case "template": {
-                fileName = projectsMap.get(projectId).getOutputSettings().getTemplateProperties().getTemplateName() + ".json";
+//                fileName = projectsMap.get(projectId).getOutputSettings().getTemplateProperties().getTemplateName() + ".json";
+                fileName = EAppSettings.ANALYZER_TEMPLATE_ZIP_FILE.getConfigurationParameter();
                 break;
             }
             case "index": {
-                fileName = projectsMap.get(projectId).getOutputSettings().getIndexProperties().getIndexName() + ".json";
+                fileName = projectsMap.get(projectId).getOutputSettings().getIndexProperties().getIndexName() + "-index.json";
                 break;
             }
             case "change_log": {

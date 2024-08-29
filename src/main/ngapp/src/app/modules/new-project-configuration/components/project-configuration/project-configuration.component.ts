@@ -14,7 +14,7 @@ import {Observable, ReplaySubject} from 'rxjs';
 import {ProjectConfigurationModel} from '../../../../models/project-configuration.model';
 import {NewProjectConfigurationStore} from '../store/new-project-configuration-store';
 import {FormService} from '../../services/form.service';
-import {AbstractControl, FormControl, FormGroup, Validators} from '@angular/forms';
+import {AbstractControl, FormControl, FormGroup, FormGroupName, Validators} from '@angular/forms';
 import {MatCheckboxChange} from '@angular/material/checkbox';
 import {SubSink} from 'subsink';
 import {ApiService} from '../../../../shared/api.service';
@@ -184,7 +184,7 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
 
   checkGenerateTemplateAndGenerateIndex(): void {
     if (
-      this.newProjectForm.get('actions').get('is_generate_template').value ===
+      this.newProjectForm.get('actions').get('is_generate_index_template').value ===
       false
     ) {
       this.disableControls(this.template_properties);
@@ -469,6 +469,16 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
       ?.get('template_properties')
       ?.get('index_settings')
       ?.get('refresh_interval');
+  }
+  get isGenerateDedicatedComponentsTemplate():FormControl | undefined {
+    return this.newProjectForm
+      ?.get('actions')
+      ?.get('is_generate_dedicated_components_template') as FormControl;
+  }
+  get isSeparateMappingsAndSettings(): FormControl | undefined {
+    return this.newProjectForm
+      ?.get('actions')
+      ?.get('is_separate_mappings_and_settings') as FormControl;
   }
 
   //endregion
@@ -899,11 +909,13 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
     event: MatCheckboxChange,
     generateTemplate: number
   ): void {
-    debugger
     switch (generateTemplate) {
       case 0:
         if (!event.checked) {
           this.disableControls(this.template_properties);
+          this.disableControl(this.isGenerateDedicatedComponentsTemplate);
+          this.disableControl(this.isSeparateMappingsAndSettings);
+          // TODO: is_generate_dedicated_components_template,is_separate_mappings_and_settings
           this.clearValidators(this.template_nameForTemplate);
           this.clearValidators(this.index_patternsForTemplate);
           this.cdr.markForCheck();
@@ -911,6 +923,8 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
           this.setValidators(this.template_nameForTemplate);
           this.setValidators(this.index_patternsForTemplate);
           this.enableControls(this.template_properties);
+          this.enableControl(this.isGenerateDedicatedComponentsTemplate);
+          this.enableControl(this.isSeparateMappingsAndSettings);
           // this.isDisableButton = false;
           this.cdr.detectChanges();
         }
@@ -941,6 +955,15 @@ export class ProjectConfigurationComponent implements OnInit, OnDestroy,AfterVie
       this.cdr.detectChanges();
     });
   }
+  disableControl(control: AbstractControl): void {
+    control.disable();
+    this.cdr.detectChanges();
+  }
+  enableControl(control: AbstractControl): void {
+    control.enable();
+    this.cdr.detectChanges();
+  }
+
 
   enableControls(properties: FormGroup): void {
     Object.keys(properties.controls).forEach((key) => {

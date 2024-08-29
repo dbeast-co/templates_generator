@@ -1,0 +1,35 @@
+:host {
+  margin-block-start: 24px;
+  display: block;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-block-end: 24px;
+  max-width: 72%;
+
+  img {
+    margin-inline-start: 5px;
+  }
+
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  width: 100%;
+  padding: 20px 30px;
+  border-radius: 15px;
+  background: #087F8CFF;
+  box-shadow: 10px 10px 10px rgba(28, 28, 28, 0.8);
+  row-gap: 18px;
+
+  h3 {
+    font-size: 20px;
+    text-align: center;
+    color: white;
+  }
+}

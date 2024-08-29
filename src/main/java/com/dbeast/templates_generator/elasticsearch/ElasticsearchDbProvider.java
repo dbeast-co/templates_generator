@@ -103,7 +103,7 @@ public class ElasticsearchDbProvider {
                 return clientBuilder;
             } catch (NoSuchAlgorithmException | KeyManagementException | IOException | CertificateException | KeyStoreException e) {
                 logger.warn("error in the connection to the cluster\n" + e);
-                throw new ClusterConnectionException(e.getMessage());
+                throw new ClusterConnectionException(e.getMessage(), e);
             }
         } else {
             return addSslToClientBuilder(connectionSettings, clientBuilder);
@@ -132,7 +132,7 @@ public class ElasticsearchDbProvider {
             return clientBuilder;
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             logger.warn("error in the connection to the cluster\n" + e);
-            throw new ClusterConnectionException(e.getMessage());
+            throw new ClusterConnectionException(e.getMessage(), e);
         }
     }
 
