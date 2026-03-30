@@ -35,7 +35,7 @@
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.12.1</version>
+                <version>1.15.4</version>
                 <configuration>
                     <nodeVersion>v16.17.0</nodeVersion>
                     <npmVersion>8.15.0</npmVersion>
@@ -270,11 +270,6 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.7.1</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.eirslett</groupId>
-            <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.15.4</version>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
