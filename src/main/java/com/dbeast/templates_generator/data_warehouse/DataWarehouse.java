@@ -16,7 +16,6 @@ import java.util.Map;
 
 public class DataWarehouse {
     private static final Logger logger = LogManager.getLogger();
-    private MappingGenerator mappingGenerator;
     private Map<String, ProjectPOJO> projectsMap = new HashMap<>();
     private Map<String, List<String>> projectAnalyticsLog = new HashMap<>();
     private Map<String, Map<String, Object>> projectsSamples = new HashMap<>();

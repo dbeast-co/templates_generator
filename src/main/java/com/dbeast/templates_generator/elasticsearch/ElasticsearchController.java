@@ -1,5 +1,6 @@
 package com.dbeast.templates_generator.elasticsearch;
 
+import com.dbeast.templates_generator.app_settings.AppSettingsPOJO;
 import com.dbeast.templates_generator.exceptions.ClusterConnectionException;
 import com.dbeast.templates_generator.templates_generator.pojo.EsSettingsPOJO;
 import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_settings.InputSettingsPOJO;
@@ -36,7 +37,17 @@ public class ElasticsearchController {
     private static final Logger logger = LogManager.getLogger();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final ElasticsearchDbProvider elasticsearchClient = new ElasticsearchDbProvider();
+    private final ElasticsearchDbProvider elasticsearchClient;
+
+    // Constructor without AppSettings (backward compatibility, no proxy)
+    public ElasticsearchController() {
+        this.elasticsearchClient = new ElasticsearchDbProvider();
+    }
+
+    // Constructor with AppSettings (with proxy support)
+    public ElasticsearchController(AppSettingsPOJO appSettings) {
+        this.elasticsearchClient = new ElasticsearchDbProvider(appSettings);
+    }
 
     public boolean isTemplateExistsOld(final RestHighLevelClient client,
                                     final String templateName) {

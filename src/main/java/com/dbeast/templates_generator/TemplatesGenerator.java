@@ -4,6 +4,7 @@ import com.dbeast.templates_generator.app_settings.AppPOJO;
 import com.dbeast.templates_generator.app_settings.AppSettingsPOJO;
 import com.dbeast.templates_generator.constants.EAppSettings;
 import com.dbeast.templates_generator.data_warehouse.DataWarehouse;
+import com.dbeast.templates_generator.data_warehouse.MappingGeneratorController;
 import com.dbeast.templates_generator.exceptions.ClusterConnectionException;
 import com.dbeast.templates_generator.exceptions.IndexNotFoundOrEmptyException;
 import com.dbeast.templates_generator.exceptions.TemplateNotFoundException;
@@ -74,6 +75,8 @@ public class TemplatesGenerator {
         }
         DataWarehouse dataWarehouse = DataWarehouse.getInstance();
         dataWarehouse.init(appSettings);
+        MappingGeneratorController mappingGeneratorController = MappingGeneratorController.getInstance();
+
         MainRest restApi = new MainRest(appSettings);
         restApi.runServer(appSettings.getApp().getHost(), appSettings.getApp().getPort());
     }

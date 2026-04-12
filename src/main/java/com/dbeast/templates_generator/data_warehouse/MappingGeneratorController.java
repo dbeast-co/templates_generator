@@ -27,10 +27,7 @@ import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,8 +41,7 @@ public class MappingGeneratorController {
 
     private final Map<String, ProjectPOJO> projectsMap = dataWarehouse.getProjectsMap();
 
-    private final AppSettingsPOJO appSettings = dataWarehouse.getAppSettings();
-    private final ElasticsearchController elasticsearchController = new ElasticsearchController();
+    private ElasticsearchController elasticsearchController = new ElasticsearchController();
 
 
     private static final MappingGeneratorController _instance = new MappingGeneratorController();
@@ -58,6 +54,10 @@ public class MappingGeneratorController {
     }
 
     private MappingGeneratorController() {
+    }
+
+    public void init(AppSettingsPOJO appSettings) {
+        elasticsearchController = new ElasticsearchController(appSettings);
     }
 
     public boolean saveProject(ProjectPOJO project) {

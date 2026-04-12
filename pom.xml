@@ -73,7 +73,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.7</version>
+                <version>3.5.0</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -169,7 +169,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -187,43 +187,6 @@
                 </executions>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <artifactId>exec-maven-plugin</artifactId>-->
-<!--                <version>3.0.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>exec-npm-install</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <configuration>-->
-<!--                            <workingDirectory>${project.basedir}/src/main/ngapp</workingDirectory>-->
-<!--                            <executable>npm.cmd</executable>-->
-<!--                            <arguments>-->
-<!--                                <argument>install</argument>-->
-<!--                            </arguments>-->
-<!--                        </configuration>-->
-<!--                        <goals>-->
-<!--                            <goal>exec</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                    <execution>-->
-<!--                        <id>exec-npm-ng-build</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <configuration>-->
-<!--                            <workingDirectory>${project.basedir}/src/main/ngapp</workingDirectory>-->
-<!--                            <executable>ng.cmd</executable>-->
-<!--                            <arguments>-->
-<!--                                <argument>build</argument>-->
-<!--                                <argument>&#45;&#45;no-progress</argument>-->
-<!--                                <argument>&#45;&#45;output-path=${project.basedir}/out/client</argument>-->
-<!--                            </arguments>-->
-<!--                        </configuration>-->
-<!--                        <goals>-->
-<!--                            <goal>exec</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
         </plugins>
     </build>
     <dependencies>

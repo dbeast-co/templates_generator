@@ -82,6 +82,7 @@ public class EsSettingsPOJO implements Cloneable {
     }
 
 
+
     public String host() {
         String[] splattedHost = es_host.split("//");
         return splattedHost[1].split(":")[0];

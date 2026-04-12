@@ -1,9 +1,11 @@
 package com.dbeast.templates_generator.legacy_to_index_templates_converter;
 
 import com.dbeast.templates_generator.TemplatesGenerator;
+import com.dbeast.templates_generator.app_settings.AppSettingsPOJO;
 import com.dbeast.templates_generator.constants.EAppSettings;
 import com.dbeast.templates_generator.data_warehouse.MappingGeneratorController;
 import com.dbeast.templates_generator.elasticsearch.ElasticsearchController;
+import com.dbeast.templates_generator.elasticsearch.ElasticsearchDbProvider;
 import com.dbeast.templates_generator.exceptions.ClusterConnectionException;
 import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.ComponentTemplateOutputPOJO;
 import com.dbeast.templates_generator.templates_generator.pojo.ui_pojo.project_output.IndexTemplateOutputPOJO;
