@@ -50,7 +50,7 @@ public class ElasticsearchController {
     }
 
     public boolean isTemplateExistsOld(final RestHighLevelClient client,
-                                    final String templateName) {
+                                       final String templateName) {
         GetIndexTemplatesResponse response;
         try {
             GetIndexTemplatesRequest request = new GetIndexTemplatesRequest(templateName);
@@ -67,7 +67,7 @@ public class ElasticsearchController {
         boolean result;
         try {
             IndexTemplatesExistRequest legacyTemplateRequest = new IndexTemplatesExistRequest(templateName);
-            result =  client.indices().existsTemplate(legacyTemplateRequest, RequestOptions.DEFAULT);
+            result = client.indices().existsTemplate(legacyTemplateRequest, RequestOptions.DEFAULT);
             if (!result) {
                 GetComposableIndexTemplateRequest composableTemplateRequest = new GetComposableIndexTemplateRequest(templateName);
                 GetComposableIndexTemplatesResponse getTemplatesResponse = client.indices().getIndexTemplate(composableTemplateRequest, RequestOptions.DEFAULT);
@@ -199,6 +199,7 @@ public class ElasticsearchController {
                                                          final String projectId) {
         return getTemplateOrIndexList(connectionSettings, "/_cat/templates?h=name&format=json", projectId);
     }
+
     public Set<String> getLegacyTemplateList(final EsSettingsPOJO connectionSettings,
                                              final String projectId) {
 //        return getTemplateOrIndexList(connectionSettings, "/_cat/templates?h=name&format=json", projectId);
@@ -273,8 +274,8 @@ public class ElasticsearchController {
     }
 
     public String getClusterStatus(final EsSettingsPOJO connectionSettings,
-                                   final String projectId) throws
-            ClusterConnectionException {
+                                   final String projectId)
+            throws ClusterConnectionException {
         RestHighLevelClient client = elasticsearchClient.getHighLevelClient(connectionSettings, projectId);
         try {
             ClusterHealthRequest request = new ClusterHealthRequest();
@@ -293,6 +294,7 @@ public class ElasticsearchController {
             }
         }
     }
+
     public String getClusterStatus(final RestHighLevelClient client) throws
             ClusterConnectionException {
         try {
@@ -324,9 +326,9 @@ public class ElasticsearchController {
             Max max = aggregations.get("max");
 
             return new DataPeriodFromEs(
-                    (long)min.getValue(),
+                    (long) min.getValue(),
 //                    new Double(min.getValue()).longValue(),
-                    (long)max.getValue()
+                    (long) max.getValue()
             );
         } catch (IOException | ElasticsearchException e) {
             logger.error(e);
