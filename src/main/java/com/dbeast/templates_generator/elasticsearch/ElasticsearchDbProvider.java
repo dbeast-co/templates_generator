@@ -1,6 +1,7 @@
 package com.dbeast.templates_generator.elasticsearch;
 
 import com.dbeast.templates_generator.app_settings.AppSettingsPOJO;
+import com.dbeast.templates_generator.app_settings.ProxyPOJO;
 import com.dbeast.templates_generator.data_warehouse.DataWarehouse;
 import com.dbeast.templates_generator.exceptions.ClusterConnectionException;
 import com.dbeast.templates_generator.templates_generator.pojo.EsSettingsPOJO;
@@ -34,12 +35,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.Arrays;
-import java.util.List;
 
 public class ElasticsearchDbProvider {
     private static final Logger logger = LogManager.getLogger();
     private AppSettingsPOJO appSettings = DataWarehouse.getInstance().getAppSettings();
+    ProxyPOJO proxySettings = new ProxyPOJO(appSettings);
 
     public ElasticsearchDbProvider() {
     }
@@ -55,11 +55,12 @@ public class ElasticsearchDbProvider {
             addSslToClientBuilder(connectionSettings, clientBuilder, projectId);
         } else if (connectionSettings.isAuthentication_enabled()) {
             addBasicAuthenticationToClientBuilder(connectionSettings, clientBuilder);
+        } else {
+            addProxyOnlyToClientBuilder(clientBuilder, connectionSettings);
         }
-        addProxyToClientBuilder(clientBuilder, connectionSettings);
-
         return new RestHighLevelClient(clientBuilder);
     }
+
 
     public RestHighLevelClient getHighLevelClient(final EsSettingsPOJO connectionSettings) throws ClusterConnectionException {
         RestClientBuilder clientBuilder = buildLowLevelRestClient(connectionSettings);
@@ -67,10 +68,25 @@ public class ElasticsearchDbProvider {
             addSslToClientBuilder(connectionSettings, clientBuilder, connectionSettings.getSsl_file());
         } else if (connectionSettings.isAuthentication_enabled()) {
             addBasicAuthenticationToClientBuilder(connectionSettings, clientBuilder);
+        } else {
+            addProxyOnlyToClientBuilder(clientBuilder, connectionSettings);
         }
-        addProxyToClientBuilder(clientBuilder, connectionSettings);
         return new RestHighLevelClient(clientBuilder);
     }
+
+    private void addProxyOnlyToClientBuilder(final RestClientBuilder clientBuilder, EsSettingsPOJO connectionSettings) {
+        if (proxySettings.isProxyConfigured() && !proxySettings.isHostInNonProxyList(connectionSettings.getEs_host())) {
+            clientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+                @Override
+                public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                    CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    applyProxy(httpClientBuilder, proxySettings, credentialsProvider);
+                    return httpClientBuilder;
+                }
+            });
+        }
+    }
+
 
     public RestClient getLowLevelClient(final EsSettingsPOJO connectionSettings,
                                         final String projectId) throws ClusterConnectionException {
@@ -112,9 +128,17 @@ public class ElasticsearchDbProvider {
                     public HttpAsyncClientBuilder customizeHttpClient(
                             HttpAsyncClientBuilder httpClientBuilder) {
 
-                        return httpClientBuilder.setSSLContext(sslContext)
-                                .setDefaultCredentialsProvider(credentialsProvider)
+                        httpClientBuilder.setSSLContext(sslContext)
                                 .setSSLHostnameVerifier((s, sslSession) -> true);
+
+                        // Merge credentials: ES + proxy (if needed)
+                        if (proxySettings.isProxyConfigured() && !proxySettings.isHostInNonProxyList(connectionSettings.getEs_host())) {
+                            applyProxy(httpClientBuilder, proxySettings, credentialsProvider);
+                        } else {
+                            httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                        }
+
+                        return httpClientBuilder;
                     }
                 });
             } catch (NoSuchAlgorithmException | KeyManagementException | IOException | CertificateException |
@@ -126,6 +150,39 @@ public class ElasticsearchDbProvider {
             addSslToClientBuilder(connectionSettings, clientBuilder);
         }
     }
+
+
+    /**
+     * Applies proxy settings to the HTTP client builder, merging proxy credentials
+     * with any existing ES credentials into a single CredentialsProvider.
+     */
+    private void applyProxy(HttpAsyncClientBuilder httpClientBuilder,
+                            ProxyPOJO proxyConfig,
+                            CredentialsProvider existingCredentials) {
+
+        HttpHost proxy = new HttpHost(proxyConfig.getProxyHTTPHost(),
+                proxyConfig.getProxyHTTPPort(),
+                "http");
+        httpClientBuilder.setRoutePlanner(new DefaultProxyRoutePlanner(proxy));
+        logger.info("Proxy route planner configured for {}:{}",
+                proxyConfig.getProxyHTTPHost(),
+                proxyConfig.getProxyHTTPPort());
+
+        // Use existing credentials provider (which may already contain ES auth)
+        // and add proxy credentials to it
+        if (proxyConfig.isProxyHTTPHasAuth()) {
+            existingCredentials.setCredentials(
+                    new AuthScope( proxyConfig.getProxyHTTPHost(),
+                            proxyConfig.getProxyHTTPPort()),
+                    new UsernamePasswordCredentials(proxyConfig.getProxyHTTPUser(),
+                            proxyConfig.getProxyHTTPPassword())
+            );
+            logger.info("Proxy authentication configured for user: {}",
+                    proxyConfig.getProxyHTTPUser());
+        }
+        httpClientBuilder.setDefaultCredentialsProvider(existingCredentials);
+    }
+
 
     private void addSslToClientBuilder(final EsSettingsPOJO connectionSettings,
                                        final RestClientBuilder clientBuilder) throws ClusterConnectionException {
@@ -141,10 +198,17 @@ public class ElasticsearchDbProvider {
                 public HttpAsyncClientBuilder customizeHttpClient(
                         HttpAsyncClientBuilder httpClientBuilder) {
 
-                    return httpClientBuilder.setSSLContext(sslContext)
-                            .setDefaultCredentialsProvider(credentialsProvider)
-                            //This supposed to disable certificate verification
+                    httpClientBuilder.setSSLContext(sslContext)
                             .setSSLHostnameVerifier((s, sslSession) -> true);
+
+                    // Merge credentials: ES + proxy (if needed)
+                    if (proxySettings.isProxyConfigured() && !proxySettings.isHostInNonProxyList(connectionSettings.getEs_host())) {
+                        applyProxy(httpClientBuilder, proxySettings, credentialsProvider);
+                    } else {
+                        httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                    }
+
+                    return httpClientBuilder;
                 }
             });
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
@@ -158,106 +222,67 @@ public class ElasticsearchDbProvider {
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY,
                 new UsernamePasswordCredentials(connectionSettings.getUsername(), connectionSettings.getPassword()));
-    }
-
-    private void addProxyToClientBuilder(final RestClientBuilder clientBuilder, EsSettingsPOJO connectionSettings) {
-        logger.info("Attempting to configure proxy for plain connection");
-
-        if (appSettings == null) {
-            logger.warn("AppSettings is NULL - proxy cannot be configured. Create provider with: new ElasticsearchDbProvider(appSettings)");
-            return;
-        }
-
-        if (appSettings.getApp() == null) {
-            logger.warn("AppSettings.App is NULL - proxy cannot be configured");
-            return;
-        }
-
-        String proxyHost = appSettings.getApp().getHttp_proxy();
-        String noProxy = appSettings.getApp().getNo_proxy();
-
-        if (proxyHost == null || proxyHost.isEmpty() || proxyHost.equalsIgnoreCase("null")) {
-            logger.info("Proxy host is not configured in configuration");
-            return;
-        }
-
-        if (noProxy == null || noProxy.isEmpty() || noProxy.equalsIgnoreCase("null")) {
-            logger.info("Proxy host is not configured in configuration");
-            return;
-        } else {
-            List<String> noProxyList = Arrays.asList(noProxy.split(","));
-
-            boolean isNoProxy = noProxyList.stream()
-                    .anyMatch(noProxyHost -> connectionSettings.getEs_host().toLowerCase().contains(noProxyHost.toLowerCase()));
-
-            if (isNoProxy) {
-                logger.info("Target host {} is in no_proxy list - skipping proxy configuration", connectionSettings.getEs_host());
-                return;
-            }
-        }
-
-
-        int proxyPort = 0;
-        final String proxyUser = appSettings.getApp().getProxy_user();
-        final String proxyPassword = appSettings.getApp().getProxy_password();
-
-        logger.debug("Proxy config - host: {}, user: {}, password: {}",
-                proxyHost, proxyUser, (proxyPassword != null && !proxyPassword.isEmpty() ? "***" : "null"));
-
-        // Try to parse proxy host and port
-        logger.info("Proxy host is configured: {}", proxyHost);
-
-        // Parse proxy host and port (format: host:port)
-        if (proxyHost.contains(":")) {
-            String[] parts = proxyHost.split(":");
-            proxyHost = parts[0];
-            try {
-                proxyPort = Integer.parseInt(parts[1]);
-            } catch (NumberFormatException e) {
-                logger.warn("Invalid proxy port in configuration: " + parts[1]);
-                return;
-            }
-        } else {
-            proxyPort = 8080; // Default proxy port
-        }
-
-        final String finalProxyHost = proxyHost;
-        final int finalProxyPort = proxyPort;
-
-        // Check if proxy credentials are provided
-        final boolean hasProxyAuth = proxyUser != null && !proxyUser.isEmpty() && !proxyUser.equalsIgnoreCase("null")
-                && proxyPassword != null && !proxyPassword.isEmpty() && !proxyPassword.equalsIgnoreCase("null");
-
-        logger.info("Configuring proxy: {}:{}, auth enabled: {}", finalProxyHost, finalProxyPort, hasProxyAuth);
 
         clientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
             @Override
             public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-                HttpHost proxy = new HttpHost(finalProxyHost, finalProxyPort, "http");
-                HttpRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-                httpClientBuilder.setRoutePlanner(routePlanner);
-
-                logger.info("Proxy route planner configured for {}:{}", finalProxyHost, finalProxyPort);
-
-                // Add proxy credentials ONLY if provided
-                if (hasProxyAuth) {
-                    CredentialsProvider proxyCredentialsProvider = new BasicCredentialsProvider();
-                    // Set credentials for the proxy itself (not for target Elasticsearch)
-                    proxyCredentialsProvider.setCredentials(
-                            new AuthScope(finalProxyHost, finalProxyPort),
-                            new UsernamePasswordCredentials(proxyUser, proxyPassword)
-                    );
-                    httpClientBuilder.setDefaultCredentialsProvider(proxyCredentialsProvider);
-                    logger.info("Proxy authentication configured for user: {}", proxyUser);
+                if (proxySettings.isProxyConfigured() && !proxySettings.isHostInNonProxyList(connectionSettings.getEs_host())) {
+                    applyProxy(httpClientBuilder, proxySettings, credentialsProvider);
                 } else {
-                    logger.debug("No proxy credentials configured - using anonymous proxy access");
+                    httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                 }
-
                 return httpClientBuilder;
             }
         });
-
     }
+
+//    private void addProxyToClientBuilder(final RestClientBuilder clientBuilder,
+//                                         EsSettingsPOJO connectionSettings) {
+//        logger.info("Attempting to configure proxy for plain connection");
+//        if (!proxySettings.isProxyConfigured()) {
+//            logger.info("Proxy host is not configured in configuration");
+//            return;
+//        }
+//
+//        if (proxySettings.isHostInNonProxyList(connectionSettings.getEs_host())) {
+//            logger.info("Target host {} is in no_proxy list - skipping proxy configuration", connectionSettings.getEs_host());
+//            return;
+//        }
+//
+//        logger.debug("Proxy config - host: {}, user: {}, password: {}",
+//                proxySettings.getProxyHTTPHost() + proxySettings.getProxyHTTPPort(),
+//                proxySettings.getProxyHTTPUser(),
+//                proxySettings.getProxyHTTPPassword());
+//
+//        RestClientBuilder.HttpClientConfigCallback httpClientCallback = new RestClientBuilder.HttpClientConfigCallback();
+//        clientBuilder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+//            @Override
+//            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+//                HttpHost proxy = new HttpHost(finalProxyHost, finalProxyPort, "http");
+//                HttpRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
+//                httpClientBuilder.setRoutePlanner(routePlanner);
+//
+//                logger.info("Proxy route planner configured for {}:{}", finalProxyHost, finalProxyPort);
+//
+//                // Add proxy credentials ONLY if provided
+//                if (hasProxyAuth) {
+//                    CredentialsProvider proxyCredentialsProvider = new BasicCredentialsProvider();
+//                    // Set credentials for the proxy itself (not for target Elasticsearch)
+//                    proxyCredentialsProvider.setCredentials(
+//                            new AuthScope(finalProxyHost, finalProxyPort),
+//                            new UsernamePasswordCredentials(proxyUser, proxyPassword)
+//                    );
+//                    httpClientBuilder.setDefaultCredentialsProvider(proxyCredentialsProvider);
+//                    logger.info("Proxy authentication configured for user: {}", proxyUser);
+//                } else {
+//                    logger.debug("No proxy credentials configured - using anonymous proxy access");
+//                }
+//
+//                return httpClientBuilder;
+//            }
+//        });
+//
+//    }
 
     public void closeConnection() {
     }
